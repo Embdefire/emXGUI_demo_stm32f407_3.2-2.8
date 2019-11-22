@@ -80,7 +80,7 @@ void* GUI_VMEM_Alloc(u32 size)
 	GUI_MutexUnlock(mutex_vmem);
   if(p==NULL)
 	{
-	    GUI_ERROR("GUI_VMEM_Alloc,no enough space(for %d byte, residue %d byte)", size, heap_vmem.total_size - heap_vmem.used_cur);
+	    GUI_ERROR("GUI_VMEM_Alloc,no enough space(for %d byte)",size);
 	}
   
 	return p;
@@ -123,7 +123,6 @@ void	GUI_MEM_Init(void)
 void*	GUI_MEM_Alloc(U32 size)
 {
 	void *p=NULL;
-//  printf("剩余：%d字节\n需要：%d字节\n", xPortGetFreeHeapSize(), size);
 	p =OS_MALLOC(size);
 	if(p==NULL)
 	{
@@ -143,7 +142,6 @@ void*	GUI_MEM_Alloc(U32 size)
 void	GUI_MEM_Free(void *p)
 {
 	OS_FREE(p);
-//  printf("释放后剩余：%d字节\n",xPortGetFreeHeapSize());
 }
 
 /*===================================================================================*/
@@ -155,7 +153,6 @@ void	GUI_MEM_Free(void *p)
 */
 void*	GUI_GRAM_Alloc(U32 size)
 {
-  
 	return GUI_VMEM_Alloc(size);
 }
 

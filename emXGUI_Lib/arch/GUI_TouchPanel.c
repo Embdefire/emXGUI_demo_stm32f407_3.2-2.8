@@ -298,13 +298,15 @@ static int	touch_screen_data_init(void)
 extern const GUI_TOUCH_DEV *pTouchDev;
 
 static int ts_state=TS_ACT_NONE;
-
+static int ts_x,ts_y;
 
 
 //BOOL TouchDev_Init(void)
 BOOL GTP_Init_Panel(void)
 {
 	ts_state=TS_ACT_NONE;
+	ts_x=0;
+	ts_y=0;
 
 
 	if(pTouchDev)
@@ -319,12 +321,9 @@ BOOL GTP_Init_Panel(void)
 int TouchDev_GetAction(void)
 {
 	static u8 act=0;
-//	int old;
 
 	act<<=1;
 	act|=pTouchDev->GetState();
-
-//	old =ts_state;
 
 	switch(act&0x03)
 	{
@@ -385,7 +384,6 @@ BOOL TouchDev_SaveCfg(TS_CFG_DATA *cfg)
 //		{
 //			MouseInput(pt.x,pt.y,MK_LBUTTON);
 //		}
-
 //	}
 
 //	if(act==TS_ACT_UP)
