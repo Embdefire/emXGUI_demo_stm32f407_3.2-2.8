@@ -27,26 +27,15 @@ extern "C"{
 #include "system_stm32f4xx.h"
 
 
-//#include "drv_inc/bsp_spi_flash.h"
-//#include "drv_inc/bsp_eeprom_24xx.h"
-//#include "drv_inc/audio_drv.h"
-//#include "drv_inc/adc_drv.h"
 #include "./flash/bsp_spi_flash.h"
 #include "./led/bsp_led.h" 
 #include "./uart/bsp_debug_usart.h"
 #include "./key/bsp_key.h" 
 #include "ff.h"
+#include ".\clock\rtc\bsp_date.h"
+#include  ".\clock\rtc\bsp_rtc.h"
+#include "./wm8978/bsp_wm8978.h"  
 
-
-//#include "Common/drv_inc/my_iic.h"
-//#include "Common/drv_inc/my_uart.h"
-
-//#include "Common/SYS/sys.h"
-//#include "Common/SDMMC/SDMMC.h"
-//#include "Common/I2S/bsp_i2s.h"
-//#include "Common/DMA/DMA_LCD.h"
-
-//#include "Components/WM8978/WM8978.h"
 
 #include "gui_drv_cfg.h"
 
@@ -77,7 +66,7 @@ extern "C"{
 #define	FSMC_BANK4_BASE			0x6C000000
 
 #define	EXT_SRAM_BASE	  		FSMC_BANK4_BASE
-#define	EXT_SRAM_SIZE			(1024*KB)
+#define	EXT_SRAM_SIZE	  		(1024*KB)
 
 #define	EXT_LCD_BASE			FSMC_BANK3_BASE
 

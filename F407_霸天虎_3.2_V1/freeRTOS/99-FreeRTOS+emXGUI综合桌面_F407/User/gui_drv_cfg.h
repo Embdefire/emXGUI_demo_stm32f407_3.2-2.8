@@ -44,7 +44,7 @@
 #define	DMA2D_EN                   0
 
 /* 是否使用缓冲型控件，使用的话会增加一层液晶像素数据的消耗，显示效果减少闪烁*/
-#define  FRAME_BUFFER_EN            0
+#define  FRAME_BUFFER_EN           1
 
 /*==========输入设备配置===gui_input_port.c==================================================*/
 /* 是否使用输入设备 */
@@ -71,7 +71,7 @@
 //#define	GUI_CORE_MEM_BASE	  0xD0100000  //本例子使用RTT管理，使用内部sram，不指定地址
 
 /* GUI内核使用的存储区大小，推荐最小值为8KB */
-#define  GUI_CORE_MEM_SIZE  (32*1024) //本例子使用系统管理，在rtt系统在board.c实现，freertos在heap_4.c实现
+#define  GUI_CORE_MEM_SIZE  (64*1024) //本例子使用系统管理，在rtt系统在board.c实现，freertos在heap_4.c实现
 /* 最小分配粒度，单位为字节*/  
 #define	GUI_CORE_MEM_ALLOC_UNIT   (64)         
 
@@ -96,11 +96,14 @@
  * 剩余的空间作为VMEM动态分配使用
 */
 /* 内存堆的基地址，可以为内部SRAM、外扩的SDRAM等 */  
-#define	VMEM_BASE	        (EXT_SRAM_BASE)
+#define	VMEM_BASE	        (EXT_SRAM_BASE + LCD_FRAME_SIZE)
 /* 内存堆的总大小，单位为字节 */ 
-#define	VMEM_SIZE	        ((900*1024))
+#define	VMEM_SIZE	        ((2*1024*1024) - LCD_FRAME_SIZE)
 /* 最小分配粒度，单位为字节*/  
 #define	VMEM_ALLOC_UNIT   (64)         //64字节   
+
+//设置变量定义到“EXRAM”节区的宏
+#define __EXRAM  __attribute__ ((section ("EXRAM")))
 
 /*===========字体配置===gui_font_port.c===============================================*/
 /* 默认字体使用XFT，保留，这个宏不起作用 */
@@ -132,14 +135,39 @@
 #define GUI_FONT_LOAD_TO_RAM_EN    (0 && GUI_EXTERN_FONT_EN)
 
 /* 要使用的外部默认字体文件，USE_EXTERN_FONT为1时生效 */
-#define GUI_DEFAULT_EXTERN_FONT    "GB2312_16_4BPP.xft"
+#define GUI_DEFAULT_EXTERN_FONT    "GB2312_12_4BPP.xft"
+
+/* 是否支持ICON LOGO字体，使能时需要添加相应的字体数据文件 */
+#define  GUI_ICON_LOGO_EN         1
+
+#if 0
+  /* LOGO使用的字体 */
+  #define  GUI_LOGO_FONT          LOGO_50_4BPP
+  /* ICON使用的字体 */
+  #define   GUI_ICON_FONT_100         ICON_100_4BPP
+  /* 控制ICON使用的字体 */
+  #define   GUI_CONTROL_FONT_64      CONTROL_60_8BPP
+#else
+  /* LOGO使用的字体 */
+  #define  GUI_LOGO_FONT               "logo_icon_24_4BPP.xft"//"LOGO_50_4BPP.xft"
+  #define  GUI_LOGO_FONT_200          "logo_icon_200_200_4BPP.xft"
+  /* ICON使用的字体 */
+  #define   GUI_ICON_FONT_50         "APP_ICON_50_4BPP.xft"
+  #define   GUI_ICON_FONT_150         "APP_ICON_150_150_4BPP.xft"
+  /* 控制ICON使用的字体 */
+  
+  #define   GUI_CONTROL_FONT_16      "CONTROL_ICON_16_4BPP.xft"
+  #define   GUI_CONTROL_FONT_24      "CONTROL_ICON_24_4BPP.xft"
+  #define   GUI_CONTROL_FONT_32      "CONTROL_ICON_32_32_4BPP.xft"
+  #define   GUI_CONTROL_FONT_48      "CONTROL_ICON_48_4BPP.xft"
+#endif
 
 /*===========日志输出设备配置===gui_log_port.c===============================================*/
 
 /* 是否开启调试输出、数组输出、进入函数的输出功能 */
 #define GUI_DEBUG_EN         	      1
-#define GUI_DEBUG_ARRAY_EN          0
-#define GUI_DEBUG_FUNC_EN   	       0
+#define GUI_DEBUG_ARRAY_EN          1
+#define GUI_DEBUG_FUNC_EN   	       1
 
 
 
@@ -150,6 +178,9 @@
 /* 是否支持文件系统接口,需要移植fatfs文件系统 */
 #define GUI_FS_EN         1
 
+/* 是否支持文件系统接口,需要移植fatfs文件系统 */
+#define GUI_RES_FS_EN         1
+
 /* 资源所在的基地址 */
 #define GUI_RES_BASE             4096
 
@@ -158,13 +189,13 @@
 
 /*===========图片接口配置===gui_picture_port.c===============================================*/
 /* 是否支持文件系统图片接口,需要移植fatfs文件系统 */
-#define GUI_PIC_FS_EN         0
+#define GUI_PIC_FS_EN         1
 
 /* 是否支持显示JPEG图片,需要添加jpeg解码库 */
-#define GUI_PIC_JPEG_EN       0
+#define GUI_PIC_JPEG_EN       1
 
 /* 是否支持显示JPEG图片,需要添加png解码库 */
-#define GUI_PIC_PNG_EN       0
+#define GUI_PIC_PNG_EN       1
 
 /* 截图 */
 #define GUI_PIC_CAPTURE_SCREEN_EN  ( 1 && GUI_PIC_FS_EN)

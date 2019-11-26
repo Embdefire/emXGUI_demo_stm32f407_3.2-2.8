@@ -67,13 +67,13 @@ void NMI_Handler(void)
   * @param  None
   * @retval None
   */
-void HardFault_Handler(void)
-{
-  /* Go to infinite loop when Hard Fault exception occurs */
-  printf("Hard Fault!");
-  while (1)
-  {}
-}
+//void HardFault_Handler(void)
+//{
+//  /* Go to infinite loop when Hard Fault exception occurs */
+//  printf("Hard Fault!");
+//  while (1)
+//  {}
+//}
 
 /**
   * @brief  This function handles Memory Manage exception.
@@ -139,6 +139,8 @@ void SysTick_Handler(void)
     #endif  /* INCLUDE_xTaskGetSchedulerState */
 }
 
+
+volatile uint32_t CPU_RunTime = 0UL;
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

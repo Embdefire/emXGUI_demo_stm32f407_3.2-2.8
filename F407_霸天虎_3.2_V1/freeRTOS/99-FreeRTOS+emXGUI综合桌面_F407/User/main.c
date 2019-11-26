@@ -26,7 +26,7 @@
 /* 开发板硬件bsp头文件 */
 #include "board.h"
 
-//#include <cm_backtrace.h>
+#include <cm_backtrace.h>
 
 /* hardfault跟踪器需要的定义 */
 #define HARDWARE_VERSION               "V1.0.0"
@@ -56,7 +56,7 @@
 /*
  * 当我们在写应用程序的时候，可能需要用到一些全局变量。
  */
-
+RTC_TIME rtc_time;
 
 /*
 *************************************************************************
@@ -103,8 +103,24 @@ static void BSP_Init(void)
 	
   
     /*hardfault 跟踪器初始化*/  
-//  cm_backtrace_init("Fire_FreeRTOS", HARDWARE_VERSION, SOFTWARE_VERSION);
-
+  cm_backtrace_init("Fire_FreeRTOS", HARDWARE_VERSION, SOFTWARE_VERSION);
+		
+	if (wm8978_Init()==0)
+	{
+		printf("检测不到WM8978芯片!!!\n");
+		while (1);	/* 停机 */
+	}
+		
+//			 /* 初始化 RTC */
+//		rtc_time.RTC_Time.RTC_H12=RTC_H12_AM;
+//		rtc_time.RTC_Time.RTC_Hours   =11;
+//		rtc_time.RTC_Time.RTC_Minutes =55;
+//		rtc_time.RTC_Time.RTC_Seconds =30;
+//		rtc_time.RTC_Date.RTC_WeekDay =05;
+//		rtc_time.RTC_Date.RTC_Date    =16;
+//		rtc_time.RTC_Date.RTC_Month   =10;
+//		rtc_time.RTC_Date.RTC_Year    =15;
+//		RTC_CheckAndConfig(&rtc_time,0);
 
 }
 
@@ -127,9 +143,9 @@ int main(void)
    /* 创建AppTaskCreate任务 */
   xReturn = xTaskCreate((TaskFunction_t )GUI_Thread_Entry,  /* 任务入口函数 */
                         (const char*    )"gui",/* 任务名字 */
-                        (uint16_t       )2*1024,  /* 任务栈大小 */
+                        (uint16_t       )1024,  /* 任务栈大小 */
                         (void*          )NULL,/* 任务入口函数参数 */
-                        (UBaseType_t    )3, /* 任务的优先级 */
+                        (UBaseType_t    )14, /* 任务的优先级 */
                         (TaskHandle_t*  )NULL);/* 任务控制块指针 */ 
   /* 启动任务调度 */           
   if(pdPASS == xReturn)

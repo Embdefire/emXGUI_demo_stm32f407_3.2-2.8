@@ -5,9 +5,12 @@
 #include "GUI_AppDef.h"
 #include "emxgui_png.h"
 #include "gui_font_port.h"
-
+#include "emXGUI_JPEG.h"
+#include <string.h>
 
 /**********************分界线*********************/
+
+#define GUI_HOME_BACKGROUNG_PIC      "home_desktop.jpg"
 
 HWND GUI_Boot_hwnd;
 /* 各类控件ID */
@@ -23,6 +26,7 @@ extern char bootlogo[];
 /* 外部图片数据大小 */
 extern unsigned int bootlogo_size(void);
 HWND Boot_progbar = NULL;
+HDC hdc_home_bk;
 
 /**
   * @brief  加载资源线程
@@ -61,7 +65,45 @@ static void App_Load_Res(void )
       Load_state = TRUE;
       /* 重设默认字体 */
       GUI_SetDefFont(hFont);  
-    }    
+    }
+    
+    if (Load_state != FALSE)
+    {
+      BOOL res;
+      u8 *jpeg_buf;
+      u32 jpeg_size;
+      JPG_DEC *dec;
+      /* 加载桌面背景图片 */
+      if (strstr(GUI_HOME_BACKGROUNG_PIC, "0:/") != NULL)
+      {
+        res = FS_Load_Content(GUI_HOME_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
+      }
+      else
+      {
+        res = RES_Load_Content(GUI_HOME_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
+      }
+      
+      hdc_home_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
+      ClrDisplay(hdc_home_bk, NULL, 0);
+      if(res)
+      {
+        /* 根据图片数据创建JPG_DEC句柄 */
+        dec = JPG_Open(jpeg_buf, jpeg_size);
+
+        /* 绘制至内存对象 */
+        JPG_Draw(hdc_home_bk, 0, 0, dec);
+
+        /* 关闭JPG_DEC句柄 */
+        JPG_Close(dec);
+      }
+      else
+      {
+        Load_state = FALSE;
+        GUI_ERROR("Failed to load home page background image.");
+      }
+      /* 释放图片内容空间 */
+      RES_Release_Content((char **)&jpeg_buf);
+    }
     
     //发消息给启动窗口，关闭
     SendMessage(GUI_Boot_hwnd,WM_CLOSE,0,0);
@@ -73,6 +115,7 @@ static void App_Load_Res(void )
   return;
 }
 
+void LCD_BkLight(int on);
 /**
   * @brief  启动界面回调函数
   */
@@ -203,7 +246,7 @@ static	LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   return	WM_NULL;                                     
 }
 
-extern void 	GUI_Board_App_Desktop(void);
+extern void GUI_Board_App_Desktop(void);
 extern void	GUI_RES_Writer_Dialog(void *param);
 extern void	GUI_DEMO_SlideWindow(void);
 
@@ -226,7 +269,7 @@ void	GUI_Boot_Interface_Dialog(void *param)
       if(i++>10)
       {
         ShowCursor(FALSE);
-        #ifdef STM32F10X_HD
+        #ifdef STM32F40_41xxx
           TouchScreenCalibrate();
         #endif
         ShowCursor(TRUE);
@@ -280,7 +323,7 @@ void	GUI_Boot_Interface_Dialog(void *param)
         /* 若找不到资源，进入资源烧录应用 */      
         GUI_Thread_Create(GUI_RES_Writer_Dialog,  /* 任务入口函数 */
                               "GUI_FLASH_WRITER",/* 任务名字 */
-                              5*1024,  /* 任务栈大小 */
+                              6*1024,  /* 任务栈大小 */
                               NULL, /* 任务入口函数参数 */
                               5,    /* 任务的优先级 */
                               10); /* 任务时间片，部分任务不支持 */
@@ -288,16 +331,16 @@ void	GUI_Boot_Interface_Dialog(void *param)
 
      }
 #endif     
-//		 else
-//		 {
-//		         GUI_Thread_Create(GUI_Board_App_Desktop,     /* 任务入口函数 */
-//                              "GUI_FLASH_WRITER",    /* 任务名字 */
-//                              12*1024,               /* 任务栈大小 */
-//                              NULL,                  /* 任务入口函数参数 */
-//                              8,                     /* 任务的优先级 */
-//                              10);                   /* 任务时间片，部分任务不支持 */
+		 else
+		 {
+		         GUI_Thread_Create(GUI_Board_App_Desktop,     /* 任务入口函数 */
+                              "GUI_Board_App_Desktop",    /* 任务名字 */
+                              16*1024,               /* 任务栈大小 */
+                              NULL,                  /* 任务入口函数参数 */
+                              8,                     /* 任务的优先级 */
+                              10);                   /* 任务时间片，部分任务不支持 */
 
-//		 }
+		 }
 //     else
 //     {	
 //        /* 找到资源，正常跑应用*/ 

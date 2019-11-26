@@ -18,7 +18,7 @@
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32F4xx_DFP.2.12.0</PackID>
           <PackURL>http://www.keil.com/pack</PackURL>
-          <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x20000) IRAM2(0x10000000,0x10000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
+          <Cpu>IRAM(0x20000000,0x00020000) IRAM2(0x10000000,0x00010000) IROM(0x08000000,0x00100000) CPUTYPE("Cortex-M4") FPU2 CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
           <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024 -FS08000000 -FL0100000 -FP0($$Device:STM32F407ZGTx$CMSIS\Flash\STM32F4xx_1024.FLM))</FlashDriverDll>
@@ -54,7 +54,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>1</BrowseInformation>
+          <BrowseInformation>0</BrowseInformation>
           <ListingPath>..\..\Listing\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -193,7 +193,7 @@
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
-            <RwSelD>3</RwSelD>
+            <RwSelD>4</RwSelD>
             <CodeSel>0</CodeSel>
             <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
@@ -210,7 +210,7 @@
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
             <Im1Chk>1</Im1Chk>
-            <Im2Chk>0</Im2Chk>
+            <Im2Chk>1</Im2Chk>
             <OnChipMemories>
               <Ocm1>
                 <Type>0</Type>
@@ -312,7 +312,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>3</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -336,9 +336,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,X_GUI_USE_FREERTOS</Define>
+              <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,X_GUI_USE_FREERTOS,USE_DMP,MPL_LOG_NDEBUG=1,EMPL,MPU6050,EMPL_TARGET_STM32F4,USE_USB_OTG_HS,USE_EMBEDDED_PHY</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS;..\..\User\app\GUI_Demo;..\..\..\..\..\emXGUI_Lib\libs;..\..\User\app\Board_App\rgb_led;..\..\User\OwnerDraw;..\..\User\app\Board_App;..\..\User\app\Board_App\LED_Key;..\..\User\app\Board_App\clock;..\..\User\app\Board_App\adc_Collect_voltage;..\..\User\app\Board_App\mp3_decoder;..\..\User\app\Board_App\mp3_player;..\..\User\app\Board_App\recorder;..\..\User\app\Board_App\mp3_decoder\real;..\..\User\app\Board_App\mp3_decoder\pub;..\..\User\bsp\cm_backtrace</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -360,7 +360,7 @@
             </VariousControls>
           </Aads>
           <LDads>
-            <umfTarg>1</umfTarg>
+            <umfTarg>0</umfTarg>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
             <noStLib>0</noStLib>
@@ -369,12 +369,12 @@
             <TextAddressRange>0x08000000</TextAddressRange>
             <DataAddressRange>0x20000000</DataAddressRange>
             <pXoBase></pXoBase>
-            <ScatterFile></ScatterFile>
+            <ScatterFile>..\..\Output\Fire_FreeRTOS.sct</ScatterFile>
             <IncludeLibs></IncludeLibs>
             <IncludeLibsPath></IncludeLibsPath>
             <Misc></Misc>
             <LinkerInputFile></LinkerInputFile>
-            <DisabledWarnings></DisabledWarnings>
+            <DisabledWarnings>6329</DisabledWarnings>
           </LDads>
         </TargetArmAds>
       </TargetOption>
@@ -823,6 +823,36 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>cm_backtrace</GroupName>
+          <Files>
+            <File>
+              <FileName>cm_backtrace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\bsp\cm_backtrace\cm_backtrace.c</FilePath>
+            </File>
+            <File>
+              <FileName>cm_backtrace.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\bsp\cm_backtrace\cm_backtrace.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmb_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\bsp\cm_backtrace\cmb_cfg.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmb_def.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\bsp\cm_backtrace\cmb_def.h</FilePath>
+            </File>
+            <File>
+              <FileName>cmb_fault.S</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\User\bsp\cm_backtrace\fault_handler\keil\cmb_fault.S</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Fatfs</GroupName>
           <Files>
             <File>
@@ -839,6 +869,62 @@
               <FileName>cc936.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\bsp\FATFS\option\cc936.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>extern_cc936.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\bsp\FATFS\option\extern_cc936.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1005,6 +1091,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\emXGUI_Lib\drv\gui_fs_port.c</FilePath>
             </File>
+            <File>
+              <FileName>gui_picture_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\..\emXGUI_Lib\drv\gui_picture_port.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1065,6 +1156,11 @@
               <FileType>4</FileType>
               <FilePath>..\..\..\..\..\emXGUI_Lib\libs\libjpeg_MDK_M4.lib</FilePath>
             </File>
+            <File>
+              <FileName>x_obj.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\..\..\..\emXGUI_Lib\libs\x_obj.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1089,6 +1185,71 @@
               <FileName>backend_res_writer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\emXGUI_Lib\app\base\res_writer\backend_res_writer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>gui_app</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_DEMO_SlideWindow.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_SlideWindow.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_Board_App_Desktop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\GUI_Board_App_Desktop.c</FilePath>
+            </File>
+            <File>
+              <FileName>CListMenu.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\CListMenu.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Widget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\OwnerDraw\Widget.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_App_Desktop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_App_Desktop.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DEMO_ShowWave.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_ShowWave.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DEMO_Graphics_Accelerator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_Graphics_Accelerator.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DEMO_RectSpeed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_RectSpeed.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DEMO_Settings.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_Settings.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_SelectDialogBox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_SelectDialogBox.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_DEMO_Number_Keyboard.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\GUI_DEMO_Number_Keyboard.c</FilePath>
+            </File>
+            <File>
+              <FileName>calculator.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\User\app\GUI_Demo\calculator.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -1154,6 +1315,339 @@
               <FileName>boot_logo.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\emXGUI_Lib\app\base\boot_interface\boot_logo.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/rgbled</GroupName>
+          <Files>
+            <File>
+              <FileName>Backend_RGBLED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\rgb_led\Backend_RGBLED.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_RGBLED_DIALOG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\rgb_led\GUI_RGBLED_DIALOG.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/led_key</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_LED_KEY_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\LED_Key\GUI_LED_KEY_Dialog.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/clock</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_CLOCK_DIALOG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\clock\GUI_CLOCK_DIALOG.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>bsp_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\clock\rtc\bsp_rtc.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
+              <FileName>bsp_date.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\clock\rtc\bsp_date.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/adc</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_ADC_CollectVoltage_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\adc_Collect_voltage\GUI_ADC_CollectVoltage_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\adc_Collect_voltage\bsp_adc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/music_record</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp_wm8978.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_player\wm8978\bsp_wm8978.c</FilePath>
+            </File>
+            <File>
+              <FileName>Backend_mp3Player.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_player\Backend_mp3Player.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_MusicList_DIALOG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_player\GUI_MusicList_DIALOG.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_MUSICPLAYER_DIALOG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_player\GUI_MUSICPLAYER_DIALOG.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_RECORDER_DIALOG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\recorder\GUI_RECORDER_DIALOG.c</FilePath>
+            </File>
+            <File>
+              <FileName>Backend_Recorder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\recorder\Backend_Recorder.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>MP3_decoder</GroupName>
+          <Files>
+            <File>
+              <FileName>mp3dec.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\mp3dec.c</FilePath>
+            </File>
+            <File>
+              <FileName>mp3tabs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\mp3tabs.c</FilePath>
+            </File>
+            <File>
+              <FileName>bitstream.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\bitstream.c</FilePath>
+            </File>
+            <File>
+              <FileName>buffers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\buffers.c</FilePath>
+            </File>
+            <File>
+              <FileName>dct32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\dct32.c</FilePath>
+            </File>
+            <File>
+              <FileName>dequant.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\dequant.c</FilePath>
+            </File>
+            <File>
+              <FileName>dqchan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\dqchan.c</FilePath>
+            </File>
+            <File>
+              <FileName>huffman.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\huffman.c</FilePath>
+            </File>
+            <File>
+              <FileName>hufftabs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\hufftabs.c</FilePath>
+            </File>
+            <File>
+              <FileName>imdct.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\imdct.c</FilePath>
+            </File>
+            <File>
+              <FileName>scalfact.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\scalfact.c</FilePath>
+            </File>
+            <File>
+              <FileName>stproc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\stproc.c</FilePath>
+            </File>
+            <File>
+              <FileName>subband.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\subband.c</FilePath>
+            </File>
+            <File>
+              <FileName>trigtabs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\trigtabs.c</FilePath>
+            </File>
+            <File>
+              <FileName>asmpoly_thumb2.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\arm\asmpoly_thumb2.s</FilePath>
+            </File>
+            <File>
+              <FileName>asmmisc.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\User\app\Board_App\mp3_decoder\real\arm\asmmisc.s</FilePath>
             </File>
           </Files>
         </Group>

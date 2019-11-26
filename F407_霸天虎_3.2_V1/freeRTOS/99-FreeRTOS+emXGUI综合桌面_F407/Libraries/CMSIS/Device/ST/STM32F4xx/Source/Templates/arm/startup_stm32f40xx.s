@@ -39,7 +39,7 @@
 ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Stack_Size      EQU     0x00000400
+Stack_Size      EQU     0x00004000
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -50,12 +50,12 @@ __initial_sp
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Heap_Size       EQU     0x00000200
+Heap_Size       EQU     0x00002000
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
 Heap_Mem        SPACE   Heap_Size
-__heap_limit
+__heap_limit    EQU     0x6C100000    
 
                 PRESERVE8
                 THUMB
@@ -179,9 +179,16 @@ Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
         IMPORT  SystemInit
         IMPORT  __main
-
+					
+				;从外部文件引入声明
+        ;IMPORT FSMC_InitSRAM
+					
                  LDR     R0, =SystemInit
                  BLX     R0
+								 
+                 ;LDR     R0, =FSMC_InitSRAM
+                 ;BLX     R0
+								 
                  LDR     R0, =__main
                  BX      R0
                  ENDP

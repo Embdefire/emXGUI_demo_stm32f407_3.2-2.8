@@ -53,6 +53,23 @@ HFONT defaultFontEn = NULL;
 /* 用于标记是否有资源文件无法找到 */
 BOOL res_not_found_flag = FALSE;
 
+#if(GUI_ICON_LOGO_EN)  
+/* logo字体 */
+HFONT logoFont =NULL;
+HFONT logoFont_200 =NULL;
+/* 图标字体 */
+HFONT iconFont_50 =NULL;
+HFONT iconFont_150 =NULL;
+HFONT iconFont_252 =NULL;
+/* 控制图标字体 */
+HFONT controlFont_12 =NULL;
+HFONT controlFont_24 =NULL;
+HFONT controlFont_48 =NULL;
+HFONT controlFont_32 =NULL;
+HFONT controlFont_16 =NULL;
+HFONT controlFont_72 =NULL;
+HFONT controlFont_100 =NULL;
+#endif
 /** 
   * @brief  字体参数
   *  为适应不同分辨率的屏幕，使用不同的默认字体 
@@ -290,7 +307,14 @@ HFONT GUI_Init_Extern_Font(void)
 #else
    /* 使用流设备加载字体，按需要读取 */
   {
-    defaultFont =GUI_Init_Extern_Font_Stream(GUI_DEFAULT_EXTERN_FONT);  
+    defaultFont    = GUI_Init_Extern_Font_Stream(GUI_DEFAULT_EXTERN_FONT);
+    logoFont       = GUI_Init_Extern_Font_Stream(GUI_LOGO_FONT);
+    controlFont_48 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_48);
+    controlFont_24 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_24);
+    controlFont_32 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_32);
+    controlFont_16 = GUI_Init_Extern_Font_Stream(GUI_CONTROL_FONT_16);
+    iconFont_50    = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_50);
+//    iconFont_150   = GUI_Init_Extern_Font_Stream(GUI_ICON_FONT_150);
   }
 #endif 
  

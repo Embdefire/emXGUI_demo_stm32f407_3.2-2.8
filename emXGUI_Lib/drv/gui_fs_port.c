@@ -41,8 +41,9 @@ SDK_ALIGN(uint8_t g_bufferRead[SDK_SIZEALIGN(BUFFER_SIZE, SDMMC_DATA_BUFFER_ALIG
 #endif  
 
 
+
 	/* FatFs文件系统对象 */
-static FATFS fs;									
+static FATFS fs __EXRAM;										
 
 void FileSystem_Test(void);
 
