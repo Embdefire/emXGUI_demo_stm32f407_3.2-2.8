@@ -158,7 +158,7 @@ void mp3PlayerDemo(HWND hwnd, const char *mp3file, uint8_t vol, uint8_t vol_horn
 	wm8978_Reset();		/* 复位WM8978到复位状态 */
 
    WCHAR wbuf1[3];
-   HWND  wnd = GetDlgItem(hwnd, ID_BUTTON_BUGLE);
+   HWND  wnd = GetDlgItem(hwnd, ID_BUTTON_Horn);
    
    GetWindowText(wnd, wbuf1, 3);
    if (wbuf1[0] == L'P')    // 判断当前

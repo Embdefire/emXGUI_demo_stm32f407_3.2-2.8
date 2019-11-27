@@ -1,6 +1,7 @@
 #include "emXGUI.h"
 #include "GUI_MUSICPLAYER_DIALOG.h"
 #include "x_libc.h"
+#include <stdlib.h>
 #include "string.h"
 #include "ff.h"
 #include "./mp3_player/Backend_mp3Player.h"
@@ -16,9 +17,9 @@
 #define ID_BUTTON_START      0x1005   //暂停键
 #define ID_BUTTON_NEXT       0x1006   //下一首
 #define ID_BUTTON_MINISTOP   0x1007   //迷你版暂停键
-#define ID_BUTTON_Horn       0x1008   //喇叭
+
 /*****************滑动条控件ID值*********************/
-#define ID_SCROLLBAR_HORN    0x1103   //音量条
+
 #define ID_SCROLLBAR_POWER   0x1104   //音量条
 #define ID_SCROLLBAR_TIMER   0x1105   //进度条
 /*****************文本框控件ID值*********************/
@@ -34,9 +35,7 @@
 /* 外部资源名 */
 #define ROTATE_DISK_NAME "rotate_disk_ARGB8888.bmp"
 
-//#define Music_Player_48 "Music_Player_48_48.xft"
-//#define Music_Player_64 "Music_Player_64_64.xft"
-//#define Music_Player_72 "Music_Player_72_72.xft"
+
 
 //图标管理数组
 icon_S music_icon[8] = {
@@ -50,10 +49,10 @@ icon_S music_icon[8] = {
    {"xiayishou",        {185, 209, 24, 24},   FALSE},//下一首7
   
 };
-extern HWND music_list_hwnd;
+//extern HWND music_list_hwnd;
 static char path[50] = "0:";   // 文件根目录
 static int  power = 20;                  // 耳机音量值
-static int  power_horn = 40;             // 喇叭音量值
+//static int  power_horn = 40;             // 喇叭音量值
 s32 old_scrollbar_value;                 // 上一个音量值
 TaskHandle_t h_music;                    // 音乐播放进程
 int enter_flag = 0;                      // 切换标志位
@@ -69,25 +68,25 @@ UINT    f_num;
 //歌词数组--存放歌词数据
 uint8_t ReadBuffer1[1024*5] __EXRAM;
 //MINI播放键、上一首、下一首控件句柄句柄
-static HWND mini_start;
+//static HWND mini_start;
 //歌词显示标志位
-static int show_lrc = 0;
+//static int show_lrc = 0;
 //歌词结构体
 LYRIC lrc  __EXRAM;
 static HDC hdc_bk;
 static HWND wnd;//音量滑动条窗口句柄 
-static HWND wnd_horn;//音量滑动条窗口句柄 
+//static HWND wnd_horn;//音量滑动条窗口句柄 
 static HWND wnd_power;//音量icon句柄
 extern const unsigned char gImage_0[]; 
 GUI_SEM *exit_sem = NULL;
 /*============================================================================*/
-static BITMAP bm_0;
-static HDC rotate_disk_hdc;
+//static BITMAP bm_0;
+//static HDC rotate_disk_hdc;
 
-static SURFACE *pSurf;
-static HDC hdc_mem11=NULL;
+//static SURFACE *pSurf;
+//static HDC hdc_mem11=NULL;
 SCROLLINFO sif_power;
-SCROLLINFO sif_power_horn;
+//SCROLLINFO sif_power_horn;
 //SCROLLINFO sif_power_horn;
 //HFONT Music_Player_hFont48=NULL;
 //HFONT Music_Player_hFont64  =NULL;
@@ -303,10 +302,11 @@ static void App_MusicList()
                             (TaskHandle_t  )&h1);                   /* 任务控制块指针 */
 	
       thread =1;
-      return;
+//      return;
 	}
 
-   vTaskSuspend(h_music);    // 进入列表挂起音乐播放
+    I2S_Play_Stop();
+    vTaskSuspend(h_music);    // 进入列表挂起音乐播放
 
 	while(thread) //线程已创建了
 	{
@@ -324,7 +324,7 @@ static void App_MusicList()
 	}
 
    vTaskResume(h_music);    // 退出选择列表恢复音乐播放
-    
+   I2S_Play_Start();
   GUI_Thread_Delete(GUI_GetCurThreadHandle()); 
 }
 /**
@@ -346,7 +346,7 @@ static void App_PlayMusic(HWND hwnd)
 	{  
    xTaskCreate((TaskFunction_t )(void(*)(void*))App_PlayMusic,  /* 任务入口函数 */
                             (const char*    )"App_PlayMusic",   /* 任务名字 */
-                            (uint16_t       )1024 * 2,          /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                            (uint16_t       )3*1024/4,          /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )hwnd,              /* 任务入口函数参数 */
                             (UBaseType_t    )5,                 /* 任务的优先级 */
                             (TaskHandle_t  )&h_music);          /* 任务控制块指针 */
@@ -416,12 +416,11 @@ static void App_PlayMusic(HWND hwnd)
 
          if(strstr(music_name,".wav")||strstr(music_name,".WAV"))
          {
-            printf("wav\r");
-           wavplayer(music_name, power, hdc, hwnd);
+          	 wavplayer(music_name, power, hdc, hwnd);
          }
          else
          {
-           mp3PlayerDemo(hwnd, music_name, power, power_horn, hdc);  
+							mp3PlayerDemo(hwnd, music_name, power, power, hdc);  
          }
 
         printf("播放结束\n");
@@ -467,7 +466,11 @@ static FRESULT scan_files (char* path)
     for (;;) 
     { 
       res = f_readdir(&dir, &fno); 										//读取目录下的内容
-     if (res != FR_OK || fno.fname[0] == 0) break; 	//为空时表示所有项目读取完毕，跳出
+     if (res != FR_OK || fno.fname[0] == 0)
+     {
+       f_closedir(&dir);
+       break; 	//为空时表示所有项目读取完毕，跳出
+     }
 #if _USE_LFN 
       fn = *fno.lfname ? fno.lfname : fno.fname; 
 #else 
@@ -480,7 +483,10 @@ static FRESULT scan_files (char* path)
         sprintf(&path[i], "/%s", fn); 							//合成完整目录名
         res = scan_files(path);											//递归遍历 
         if (res != FR_OK) 
-					break; 																		//打开失败，跳出循环
+        {
+          f_closedir(&dir);
+					break; 																	     	// 打开失败，跳出循环
+        }	
         path[i] = 0; 
       } 
       else 
@@ -492,7 +498,7 @@ static FRESULT scan_files (char* path)
 					{
 						sprintf(file_name, "%s/%s", path, fn);						
 						strcpy(music_playlist[music_file_num],file_name);
-                  //printf("%s\r\n", music_playlist[music_file_num]);
+
 						strcpy(music_lcdlist[music_file_num],fn);						
 						music_file_num++;//记录文件个数
 					}
@@ -675,100 +681,6 @@ static void scrollbar_owner_draw(DRAWITEM_HDR *ds)
 }
 
 
-#if 0
-/*
- * @brief  音量绘制滚动条
- * @param  hwnd:   滚动条的句柄值
- * @param  hdc:    绘图上下文
- * @param  back_c：背景颜色
- * @param  Page_c: 滚动条Page处的颜色
- * @param  fore_c：滚动条滑块的颜色
- * @retval NONE
-*/
-static void power_draw_scrollbar(HWND hwnd, HDC hdc, COLOR_RGB32 back_c, COLOR_RGB32 Page_c, COLOR_RGB32 fore_c)
-{
-	RECT rc,rc_tmp;
-   RECT rc_scrollbar;
-	GetClientRect(hwnd, &rc);
-	/* 背景 */
-   GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-   GetClientRect(hwnd, &rc);//得到控件的位置
-   WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
-   
-   BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
-
-   rc_scrollbar.x = rc.w/2-1;
-   rc_scrollbar.y = rc.y;
-   rc_scrollbar.w = 2;
-   rc_scrollbar.h = rc.h;
-   
-	SetBrushColor(hdc, MapRGB888(hdc, Page_c));
-	FillRect(hdc, &rc_scrollbar);
-
-	/* 滑块 */
-	SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);
-
-	SetBrushColor(hdc, MapRGB(hdc, 169, 169, 169));
-	//rc.y += (rc.h >> 2) >> 1;
-	//rc.h -= (rc.h >> 2);
-	/* 边框 */
-	//FillRoundRect(hdc, &rc, MIN(rc.w, rc.h) >> 2);
-	FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
-   InflateRect(&rc, -2, -2);
-
-	SetBrushColor(hdc, MapRGB888(hdc, fore_c));
-	FillCircle(hdc, rc.x + rc.w / 2, rc.y + rc.h / 2, rc.h / 2 - 1);
-   //FillRoundRect(hdc, &rc, MIN(rc.w, rc.h) >> 2);
-}
-#endif
-/*
- * @brief  自定义音量滑动条绘制函数
- * @param  ds:	自定义绘制结构体
- * @retval NONE
-*/
-static void power_scrollbar_owner_draw(DRAWITEM_HDR *ds)
-{
-   	HWND hwnd;
-	HDC hdc;
-	HDC hdc_mem;
-	HDC hdc_mem1;
-	RECT rc;
-	RECT rc_cli;
-	//	int i;
-
-	hwnd = ds->hwnd;
-	hdc = ds->hDC;
-	GetClientRect(hwnd, &rc_cli);
-
-	hdc_mem = CreateMemoryDC(SURF_SCREEN, rc_cli.w, rc_cli.h);
-	hdc_mem1 = CreateMemoryDC(SURF_SCREEN, rc_cli.w, rc_cli.h);   
-         
-   	
-	//绘制白色类型的滚动条
-	draw_scrollbar(hwnd, hdc_mem1, color_bg, RGB888( 250, 250, 250), RGB888( 255, 255, 255));
-	//绘制绿色类型的滚动条
-	draw_scrollbar(hwnd, hdc_mem, color_bg, RGB888(	50, 205, 50), RGB888(50, 205, 50));
-   SendMessage(hwnd, SBM_GETTRACKRECT, 0, (LPARAM)&rc);   
-
-	//上
-	BitBlt(hdc, rc_cli.x, rc_cli.y, rc_cli.w, rc.y, hdc_mem1, 0, 0, SRCCOPY);
-	//下
-	BitBlt(hdc, 0, rc.y + rc.h, rc_cli.w, rc_cli.h - (rc.y + rc.h), hdc_mem, 0, rc.y + rc.h, SRCCOPY);
-
-	//绘制滑块
-	if (ds->State & SST_THUMBTRACK)//按下
-	{
-      BitBlt(hdc, 0, rc.y, rc_cli.w, rc.h, hdc_mem1, 0, rc.y, SRCCOPY);
-		
-	}
-	else//未选中
-	{
-		BitBlt(hdc, 0, rc.y, rc_cli.w, rc.h, hdc_mem, 0, rc.y, SRCCOPY);
-	}
-	//释放内存MemoryDC
-	DeleteDC(hdc_mem1);
-	DeleteDC(hdc_mem);
-}
 
 HWND music_wnd_time;//歌曲进度条窗口句柄
 SCROLLINFO sif;/*设置滑动条的参数*/
@@ -826,7 +738,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 //                      music_icon[2].rc.w,music_icon[2].rc.h,
 //                      hwnd,ID_BUTTON_Equa,NULL,NULL);
         
-				          //喇叭icon
+		 //喇叭icon
          horn_wnd = CreateWindow(BUTTON,L"Q",WS_OWNERDRAW |WS_VISIBLE,
                       music_icon[3].rc.x,music_icon[3].rc.y,
                       music_icon[3].rc.w,music_icon[3].rc.h,
@@ -862,7 +774,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                          45, 183, 230, 20, hwnd, ID_SCROLLBAR_TIMER, NULL, NULL);
          SendMessage(music_wnd_time, SBM_SETSCROLLINFO, TRUE, (LPARAM)&sif);         
 
-         /*********************耳机音量值滑动条******************/
+         /*********************音量值滑动条******************/
          sif_power.cbSize = sizeof(sif_power);
          sif_power.fMask = SIF_ALL;
          sif_power.nMin = 0;
@@ -874,20 +786,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          wnd = CreateWindow(SCROLLBAR, L"SCROLLBAR_R", WS_OWNERDRAW|WS_TRANSPARENT, 
                             40, 220-31/2+5, 60, 20, hwnd, ID_SCROLLBAR_POWER, NULL, NULL);
          SendMessage(wnd, SBM_SETSCROLLINFO, TRUE, (LPARAM)&sif_power);
-				 
-				 /*********************喇叭音量值滑动条******************/
-         sif_power_horn.cbSize = sizeof(sif_power_horn);
-         sif_power_horn.fMask = SIF_ALL;
-         sif_power_horn.nMin = 0;
-         sif_power_horn.nMax = 63;//音量最大值为63
-         sif_power_horn.nValue = 20;//初始音量值
-         sif_power_horn.TrackSize = 22;//滑块值
-         sif_power_horn.ArrowSize = 0;//上下端宽度为0
-         /* 喇叭音量调节 */
-         sif_power_horn.nValue = 40;//初始音量值
-         wnd_horn = CreateWindow(SCROLLBAR, L"SCROLLBAR_H", WS_TRANSPARENT|SBS_VERT|WS_OWNERDRAW|SBS_BOTTOM_ALIGN|SBS_NOARROWS,
-                            40, 220-31/2+5, 60, 20, hwnd, ID_SCROLLBAR_HORN, NULL, NULL);
-         SendMessage(wnd_horn, SBM_SETSCROLLINFO, TRUE, (LPARAM)&sif_power_horn);
+
 				 
          
          //以下控件为TEXTBOX的创建
@@ -970,35 +869,14 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                   if(music_icon[0].state == FALSE)
                   {
                     RedrawWindow(hwnd, NULL, RDW_ALLCHILDREN|RDW_INVALIDATE);
-                    WCHAR wbuf[3];
-                    HWND  wnd1 = GetDlgItem(hwnd, ID_BUTTON_BUGLE);
-
-                    GetWindowText(wnd1, wbuf, 3);
-                    if (wbuf[0] == L'P')//为扬声器输出
-                    {
-                      ShowWindow(wnd_horn, SW_HIDE); //窗口隐藏
-                    }
-                    else// 为耳机输出
-                    {
                       ShowWindow(wnd, SW_HIDE); //窗口隐藏
-                    }
+                  
                   }
-									//当音量icon被按下时，设置为静音模式
+				          //当音量icon被按下时，设置为静音模式
                   else
 									{   
-										WCHAR wbuf[3];
-										HWND  wnd1 = GetDlgItem(hwnd, ID_BUTTON_BUGLE);
-								 
-										GetWindowText(wnd1, wbuf, 3);
-										if (wbuf[0] == L'P')//为扬声器输出
-										{
-											 ShowWindow(wnd_horn, SW_SHOW); //窗口隐藏
-										}
-										else// 为耳机输出
-										{
-											 ShowWindow(wnd, SW_SHOW); //窗口显示
-										}
-								}
+										ShowWindow(wnd, SW_SHOW); //窗口显示
+									}
 
                   break;
                }                  
@@ -1070,7 +948,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                case ID_BUTTON_Horn:
                {
                   WCHAR wbuf[3];
-                  HWND  wnd1 = GetDlgItem(hwnd, ID_BUTTON_BUGLE);
+                  HWND  wnd1 = GetDlgItem(hwnd, ID_BUTTON_Horn);
                
                   GetWindowText(wnd1, wbuf, 3);
                   if (wbuf[0] == L'P')
@@ -1083,32 +961,21 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                      SetWindowText(wnd1, L"P");
                      wm8978_CfgAudioPath(DAC_ON, SPK_ON);                        // 配置为扬声器输出
                   }
-                  
-                 if(music_icon[0].state != FALSE)    // 音量调节滑动条已弹出，切换调节滑动调
-                 {
-                   if (wbuf[0] == L'P')     // 为耳机输出（上面刚刚改变了！）
-                   {
-                     ShowWindow(wnd_horn, SW_HIDE); // 窗口显示
-                     ShowWindow(wnd, SW_SHOW);      // 窗口显示
-                   }
-                   else         // 为喇叭输出（上面刚刚改变了！）
-                   {
-                     ShowWindow(wnd_horn, SW_SHOW); // 窗口显示
-                     ShowWindow(wnd, SW_HIDE);      // 窗口隐藏
-                   }
-                 }
+                   
+									break;         
                }
-               break;  
+               
             }
          }
          
       	nr = (NMHDR*)lParam; //lParam参数，是以NMHDR结构体开头.
-         //耳机音量条处理case
-         static int ttt = 0;
+         //音量条处理case
+
          if (ctr_id == ID_SCROLLBAR_POWER)
          {
             NM_SCROLLBAR *sb_nr;
             sb_nr = (NM_SCROLLBAR*)nr; //Scrollbar的通知消息实际为 NM_SCROLLBAR扩展结构,里面附带了更多的信息.
+            static int ttt = 0;
             switch (nr->code)
             {
                case SBN_THUMBTRACK: //R滑块移动
@@ -1117,7 +984,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                   if(power == 0) 
                   {
                      wm8978_OutMute(1);//静音
-                     SendMessage(wnd_horn, SBM_SETVALUE, TRUE, power_horn); // 发送SBM_SETVALUE，将喇叭音量也设置为0
+ //                    SendMessage(wnd_horn, SBM_SETVALUE, TRUE, power_horn); // 发送SBM_SETVALUE，将喇叭音量也设置为0
                      SetWindowText(wnd_power, L"J");
                      ttt = 1;
                   }
@@ -1130,6 +997,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                      }
                      wm8978_OutMute(0);
                      wm8978_SetOUT1Volume(power);//设置WM8978的耳机音量值
+										 wm8978_SetOUT2Volume(power);//设置WM8978的喇叭音量值
                   } 
                   SendMessage(nr->hwndFrom, SBM_SETVALUE, TRUE, power); //发送SBM_SETVALUE，设置音量值
                }
@@ -1137,39 +1005,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
             }
          }
          
-         //喇叭音量条处理case
-         if (ctr_id == ID_SCROLLBAR_HORN)
-         {
-            NM_SCROLLBAR *sb_nr;
-            sb_nr = (NM_SCROLLBAR*)nr; //Scrollbar的通知消息实际为 NM_SCROLLBAR扩展结构,里面附带了更多的信息.
-            switch (nr->code)
-            {
-               case SBN_THUMBTRACK: //R滑块移动
-               {
-                  power_horn= sb_nr->nTrackValue; //得到当前的音量值
-                  if(power_horn == 0) 
-                  {
-                     wm8978_OutMute(1);//静音
-                     SendMessage(wnd, SBM_SETVALUE, TRUE, power_horn); // 发送SBM_SETVALUE，将耳机音量也设置为0
-                     SetWindowText(wnd_power, L"J");
-                     ttt = 1;
-                  }
-                  else
-                  {
-                     if(ttt == 1)
-                     {
-                        ttt = 0;
-                        SetWindowText(wnd_power, L"A");
-                     }
-                     wm8978_OutMute(0);
-                     wm8978_SetOUT2Volume(power_horn);//设置WM8978的喇叭音量值
-                  } 
-                  SendMessage(nr->hwndFrom, SBM_SETVALUE, TRUE, power_horn); //发送SBM_SETVALUE，设置音量值
-               }
-               break;
-            }
-         }
-         
+       
          //进度条处理case
          if (ctr_id == ID_SCROLLBAR_TIMER)
          {
@@ -1182,7 +1018,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
                {
                   i = sb_nr->nTrackValue; //获得滑块当前位置值                
                   SendMessage(nr->hwndFrom, SBM_SETVALUE, TRUE, i); //设置进度值
-//                  //置位进度条变更位置
+                  //置位进度条变更位置
                   chgsch = 2;     // 正在改变进度条
                }
                break;
@@ -1342,7 +1178,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
         play_index = 0;
         res = FALSE;
         music_file_num = 0;
-        power = 220;
+        power = 20;
         PostQuitMessage(hwnd);	        
         return TRUE;	
       }

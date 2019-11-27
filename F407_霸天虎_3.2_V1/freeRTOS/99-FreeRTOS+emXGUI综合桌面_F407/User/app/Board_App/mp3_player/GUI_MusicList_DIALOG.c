@@ -5,7 +5,8 @@
 #include "./mp3_player/GUI_MUSICPLAYER_DIALOG.h"
 #include	"CListMenu.h"
 #include "GUI_AppDef.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 
 /******************按键ID值********************/
 #define ID_BUTTON_EXIT 0x2000  
@@ -20,7 +21,7 @@
 
 #define ID_EXIT        0x3000
 
-HWND music_list_hwnd;
+//HWND music_list_hwnd;
 
 /**********************变量****************************/
 char music_playlist[MUSIC_MAX_NUM][FILE_NAME_LEN] __EXRAM;//播放List
@@ -153,75 +154,6 @@ static void exit_owner_draw(DRAWITEM_HDR *ds)
 //LIST
 
 
-#if 0
-/*
- * @brief  重绘列表
- * @param  ds:	自定义绘制结构体
- * @retval NONE
-*/
-static void listbox_owner_draw(DRAWITEM_HDR *ds)
-{
-	HWND hwnd;
-	HDC hdc;
-	RECT rc;
-	int i,count,cursel;
-	WCHAR wbuf[128];
-
-	hwnd =ds->hwnd;
-	hdc =ds->hDC;
-
-//	hdc =CreateMemoryDC(SURF_ARGB4444,ds->rc.w,ds->rc.h); //创建一个内存DC来绘图.
-
-	rc =ds->rc;
-
-	SetBrushColor(hdc,MapRGB(hdc,83,98,181));
-	FillRect(hdc,&ds->rc);
-  
-  if (!SendMessage(hwnd,LB_GETCOUNT,0,0))
-  {
-    /* 列表为空，显示提示信息然后直接返回 */
-    DrawText(hdc, L"没有找到音乐文件\r\n请检查SD卡！", -1, &rc, DT_CENTER|DT_VCENTER);
-    return;
-  }
-
-	i=SendMessage(hwnd,LB_GETTOPINDEX,0,0);
-	count=SendMessage(hwnd,LB_GETCOUNT,0,0);
-	cursel=SendMessage(hwnd,LB_GETCURSEL,0,0);
-
-	while(i<count)
-	{
-		SendMessage(hwnd,LB_GETITEMRECT,i,(LPARAM)&rc);
-		if(rc.y > ds->rc.h)
-		{
-			break;
-		}
-
-		SetTextColor(hdc,MapRGB(hdc,50,10,10));
-
-		if(i==cursel)
-		{
-			SetTextColor(hdc,MapRGB(hdc,2,167,240));
-		}
-		else
-		{
-			SetTextColor(hdc,MapRGB(hdc,255,255,255));
-		}
-
-		SendMessage(hwnd,LB_GETTEXT,i,(LPARAM)wbuf);
-    
-		DrawText(hdc,wbuf,-1,&rc,DT_SINGLELINE|DT_LEFT|DT_VCENTER);      // 显示电话号码
-    
-    SetPenColor(hdc,MapRGB(hdc,10,10,10));
-    HLine(hdc, rc.x, rc.y + rc.h - 1, rc.x + rc.w);                  // 画一条线
-
-		i++;
-	}
-//	BitBlt(ds->hDC,0,0,ds->rc.w,ds->rc.h,hdc,0,0,SRCCOPY); //将内存DC的内容输出到窗口(DC)中.
-//	DeleteDC(hdc);
-}
-
-#endif
-
 
 
 static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -353,7 +285,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                case ID_LIST_1:
                {
-                     play_index = SendMessage(GetDlgItem(hwnd, ID_LIST_1), LB_GETCURSEL,0,0);               // 获得当前选中行;//切换至下一首
+                     play_index = nm->idx;//切换至下一首
                      mp3player.ucStatus = STA_SWITCH;	                  
 
                }
@@ -381,14 +313,14 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          break;
       }      
       case WM_CLOSE: //窗口关闭时，会自动产生该消息.
-		{         
-         GUI_VMEM_Free(menu_list);
-         GUI_VMEM_Free(wbuf);
-         enter_flag = 0;
-         SetForegroundWindow(MusicPlayer_hwnd);
-			return DestroyWindow(hwnd); //调用DestroyWindow函数销毁窗口，该函数会使主窗口结束并退出消息循环;否则窗口将继续运行.
-		} 
-    //关闭窗口消息处理case
+			{         
+					 GUI_VMEM_Free(menu_list);
+					 GUI_VMEM_Free(wbuf);
+					 enter_flag = 0;
+					 SetForegroundWindow(MusicPlayer_hwnd);
+				return DestroyWindow(hwnd); //调用DestroyWindow函数销毁窗口，该函数会使主窗口结束并退出消息循环;否则窗口将继续运行.
+			} 
+      //关闭窗口消息处理case
       case WM_DESTROY:
       {               
         return PostQuitMessage(hwnd);	    // 退出消息循环

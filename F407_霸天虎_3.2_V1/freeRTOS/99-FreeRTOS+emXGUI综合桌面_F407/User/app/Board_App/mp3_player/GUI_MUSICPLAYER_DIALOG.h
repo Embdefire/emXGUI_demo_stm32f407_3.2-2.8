@@ -21,7 +21,7 @@
 
 #define GUI_RGB_BACKGROUNG_PIC      "musicdesktop.jpg"
 
-#define ID_BUTTON_BUGLE      0x1008   //À®°È°´Å¥
+#define ID_BUTTON_Horn       0x1008   //À®°È
 
 typedef struct{
    char *icon_name;//Í¼±êÃû

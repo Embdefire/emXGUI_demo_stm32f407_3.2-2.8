@@ -669,7 +669,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     
          BaseType_t xReturn = pdPASS;/* 定义一个创建信息返回值，默认为pdPASS */
          xReturn = xTaskCreate((TaskFunction_t )(void(*)(void*))App_PlayRecord,  /* 任务入口函数 */
-                            (const char*    )"App_PlayMusic",          /* 任务名字 */
+                            (const char*    )"App_PlayRecord",          /* 任务名字 */
                             (uint16_t       )5*1024/4,                   /* 任务栈大小FreeRTOS的任务栈以字为单位 */
                             (void*          )hwnd,                     /* 任务入口函数参数 */
                             (UBaseType_t    )5,                        /* 任务的优先级 */
