@@ -156,7 +156,7 @@ static const struct __obj_list menu_list_1[] = {
       L"设置",	     NULL,	  L"h", RGB_WHITE, GUI_Settings_DIALOG,
 //  
       L"电压表",		  NULL,	  L"W", RGB_WHITE, GUI_ADC_CollectVoltage_Dialog,  
-//      L"温湿度",	    NULL,   L"O", RGB_WHITE, GUI_T_RH_Dialog,
+      L"温湿度",	    NULL,   L"O", RGB_WHITE, GUI_T_RH_Dialog,
       L"录音机",	    NULL,	  L"Y", RGB_WHITE, GUI_RECORDER_DIALOG,
       L"FlashWriter", NULL,	  L"b", RGB_WHITE, GUI_RES_Writer_Dialog,
       

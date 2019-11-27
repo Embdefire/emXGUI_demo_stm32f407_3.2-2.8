@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,X_GUI_USE_FREERTOS,USE_DMP,MPL_LOG_NDEBUG=1,EMPL,MPU6050,EMPL_TARGET_STM32F4,USE_USB_OTG_HS,USE_EMBEDDED_PHY</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS;..\..\User\app\GUI_Demo;..\..\..\..\..\emXGUI_Lib\libs;..\..\User\app\Board_App\rgb_led;..\..\User\OwnerDraw;..\..\User\app\Board_App;..\..\User\app\Board_App\LED_Key;..\..\User\app\Board_App\clock;..\..\User\app\Board_App\adc_Collect_voltage;..\..\User\app\Board_App\mp3_decoder;..\..\User\app\Board_App\mp3_player;..\..\User\app\Board_App\recorder;..\..\User\app\Board_App\mp3_decoder\real;..\..\User\app\Board_App\mp3_decoder\pub;..\..\User\bsp\cm_backtrace</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS;..\..\User\app\GUI_Demo;..\..\..\..\..\emXGUI_Lib\libs;..\..\User\app\Board_App\rgb_led;..\..\User\OwnerDraw;..\..\User\app\Board_App;..\..\User\app\Board_App\LED_Key;..\..\User\app\Board_App\clock;..\..\User\app\Board_App\adc_Collect_voltage;..\..\User\app\Board_App\mp3_decoder;..\..\User\app\Board_App\mp3_player;..\..\User\app\Board_App\recorder;..\..\User\app\Board_App\mp3_decoder\real;..\..\User\app\Board_App\mp3_decoder\pub;..\..\User\bsp\cm_backtrace;..\..\User\app\Board_App\T_RH</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -819,6 +819,11 @@
               <FileName>bsp_sdio_sd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\bsp\sdio\bsp_sdio_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>core_delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\bsp\dwt_delay\core_delay.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1648,6 +1653,21 @@
               <FileName>asmmisc.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\..\User\app\Board_App\mp3_decoder\real\arm\asmmisc.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/T_RH</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_T_RH_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\T_RH\GUI_T_RH_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_dht11.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\T_RH\dht11\bsp_dht11.c</FilePath>
             </File>
           </Files>
         </Group>
