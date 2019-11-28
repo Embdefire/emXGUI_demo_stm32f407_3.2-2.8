@@ -143,16 +143,16 @@ static const struct __obj_list menu_list_1[] = {
       L"GUI应用",		  NULL, 	L"J", RGB_WHITE, GUI_App_Desktop,//dummy,//
       L"MP3播放器",	  NULL,	  L"I", RGB_WHITE, GUI_MUSICPLAYER_DIALOG,//dummy,//
       L"RGB彩灯",		  NULL,	  L"L", RGB_WHITE, GUI_LED_DIALOG,//dummy,//
-//      L"摄像头",		  NULL,	  L"M", RGB_WHITE, GUI_Camera_DIALOG,//dummy,//
+      L"摄像头",		  NULL,	  L"M", RGB_WHITE, GUI_Camera_DIALOG,//dummy,//
 
-//      L"WiFi",		    NULL,	  L"P", RGB_WHITE, gui_wifi_dialog,
+      L"WiFi",		    NULL,	  L"P", RGB_WHITE, gui_wifi_dialog,
 //      L"以太网",		  NULL,	  L"Q", RGB_WHITE, gui_network_dialog,
-//      L"模拟U盘",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
+      L"模拟U盘",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE, GUI_LED_KEY_Dialog,
 
 //      L"时钟",		    NULL,	  L"H", RGB_WHITE, GUI_CLOCK_DIALOG,
-//      L"电话",	      NULL, 	L"T", RGB_WHITE, GUI_Phone_Dialog,
-//      L"短信",	      NULL,   L"U", RGB_WHITE, GUI_SMS_Dialog,
+      L"电话",	      NULL, 	L"T", RGB_WHITE, GUI_Phone_Dialog,
+      L"短信",	      NULL,   L"U", RGB_WHITE, GUI_SMS_Dialog,
       L"设置",	     NULL,	  L"h", RGB_WHITE, GUI_Settings_DIALOG,
 //  
       L"电压表",		  NULL,	  L"W", RGB_WHITE, GUI_ADC_CollectVoltage_Dialog,  

@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F40_41xxx,X_GUI_USE_FREERTOS,USE_DMP,MPL_LOG_NDEBUG=1,EMPL,MPU6050,EMPL_TARGET_STM32F4,USE_USB_OTG_HS,USE_EMBEDDED_PHY</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS;..\..\User\app\GUI_Demo;..\..\..\..\..\emXGUI_Lib\libs;..\..\User\app\Board_App\rgb_led;..\..\User\OwnerDraw;..\..\User\app\Board_App;..\..\User\app\Board_App\LED_Key;..\..\User\app\Board_App\clock;..\..\User\app\Board_App\adc_Collect_voltage;..\..\User\app\Board_App\mp3_decoder;..\..\User\app\Board_App\mp3_player;..\..\User\app\Board_App\recorder;..\..\User\app\Board_App\mp3_decoder\real;..\..\User\app\Board_App\mp3_decoder\pub;..\..\User\bsp\cm_backtrace;..\..\User\app\Board_App\T_RH</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\CMSIS\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\User;..\..\FreeRTOS\include;..\..\FreeRTOS\port\RVDS\ARM_CM4F;..\..\User\bsp;..\..\..\..\..\emXGUI_Lib\inc;..\..\..\..\..\emXGUI_Lib\drv;..\..\..\..\..\emXGUI_Lib\arch\Inc;..\..\..\..\..\emXGUI_Lib\app\base;..\..\..\..\..\emXGUI_Lib\arch;..\..\User\bsp\FATFS\option;..\..\User\bsp\FATFS;..\..\User\app\GUI_Demo;..\..\..\..\..\emXGUI_Lib\libs;..\..\User\app\Board_App\rgb_led;..\..\User\OwnerDraw;..\..\User\app\Board_App;..\..\User\app\Board_App\LED_Key;..\..\User\app\Board_App\clock;..\..\User\app\Board_App\adc_Collect_voltage;..\..\User\app\Board_App\mp3_decoder;..\..\User\app\Board_App\mp3_player;..\..\User\app\Board_App\recorder;..\..\User\app\Board_App\mp3_decoder\real;..\..\User\app\Board_App\mp3_decoder\pub;..\..\User\bsp\cm_backtrace;..\..\User\app\Board_App\T_RH;..\..\User\app\Board_App\SimulateUDisk;..\..\User\app\Board_App\SimulateUDisk\USB_app;..\..\Libraries\STM32_USB_OTG_Driver\inc;..\..\Libraries\STM32_USB_Device_Library\Class\msc\inc;..\..\Libraries\STM32_USB_Device_Library\Core\inc;..\..\..\..\..\emXGUI_Lib\app\base\boot_interface\pic_load;..\..\User\app\Board_App\camera;..\..\User\app\Board_App\Phone_SMS;..\..\User\app\Board_App\WiFi</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -824,6 +824,11 @@
               <FileName>core_delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\bsp\dwt_delay\core_delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_beep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\bsp\beep\bsp_beep.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1668,6 +1673,156 @@
               <FileName>bsp_dht11.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\app\Board_App\T_RH\dht11\bsp_dht11.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/U_Disk</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_SimulateUDisk_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\SimulateUDisk\GUI_SimulateUDisk_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\SimulateUDisk\USB_app\usb_bsp.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\SimulateUDisk\USB_app\usbd_desc.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_storage_msd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\SimulateUDisk\USB_app\usbd_storage_msd.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_usr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\SimulateUDisk\USB_app\usbd_usr.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>USB Driver</GroupName>
+          <Files>
+            <File>
+              <FileName>usb_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_OTG_Driver\src\usb_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_dcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_OTG_Driver\src\usb_dcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_dcd_int.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_OTG_Driver\src\usb_dcd_int.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>USB Device</GroupName>
+          <Files>
+            <File>
+              <FileName>usbd_msc_bot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Class\msc\src\usbd_msc_bot.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Class\msc\src\usbd_msc_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Class\msc\src\usbd_msc_data.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_scsi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Class\msc\src\usbd_msc_scsi.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Core\src\usbd_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_ioreq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Core\src\usbd_ioreq.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_req.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32_USB_Device_Library\Core\src\usbd_req.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/camera</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_Camera_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\camera\GUI_Camera_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_ov5640.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\camera\bsp_ov5640.c</FilePath>
+            </File>
+            <File>
+              <FileName>ov5640_AF.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\camera\ov5640_AF.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/Phone_SMS</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_Phone_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\Phone_SMS\GUI_Phone_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_SMS_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\Phone_SMS\GUI_SMS_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_sim900a.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\Phone_SMS\sim900a\bsp_sim900a.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_usart_gsm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\Phone_SMS\sim900a\bsp_usart_gsm.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>tutorial/Wi-Fi</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_WiFi_Dialog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\WiFi\GUI_WiFi_Dialog.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_esp8266.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\app\Board_App\WiFi\ESP8266\bsp_esp8266.c</FilePath>
             </File>
           </Files>
         </Group>

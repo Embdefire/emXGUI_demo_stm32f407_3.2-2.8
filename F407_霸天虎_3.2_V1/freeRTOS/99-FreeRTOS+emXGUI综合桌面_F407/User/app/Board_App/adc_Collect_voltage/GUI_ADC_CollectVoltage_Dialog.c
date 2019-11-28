@@ -37,7 +37,7 @@
 #define TriangleLen    10    // 三角形的边长
 
 uint8_t AovingDirection = 0;
-double count = 0.0;
+//double count = 0.0;
 HWND MAIN_Handle;
 HWND Title_Handle;
 HWND Brigh_Handle;
