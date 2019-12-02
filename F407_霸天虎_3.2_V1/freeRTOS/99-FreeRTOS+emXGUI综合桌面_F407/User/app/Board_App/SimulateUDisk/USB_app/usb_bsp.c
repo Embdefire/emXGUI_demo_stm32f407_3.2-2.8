@@ -96,21 +96,20 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 {
   GPIO_InitTypeDef GPIO_InitStructure;   
 
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB , ENABLE);
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA , ENABLE);
   
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | 
-                                GPIO_Pin_15;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11 | 
+                                GPIO_Pin_12;
   
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);  
+  GPIO_Init(GPIOA, &GPIO_InitStructure);  
   
-//  GPIO_PinAFConfig(GPIOB,GPIO_PinSource12, GPIO_AF_OTG2_FS) ; 
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource14,GPIO_AF_OTG2_FS) ; 
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource15,GPIO_AF_OTG2_FS) ;
+  GPIO_PinAFConfig(GPIOA,GPIO_PinSource11,GPIO_AF_OTG1_FS) ; 
+  GPIO_PinAFConfig(GPIOA,GPIO_PinSource12,GPIO_AF_OTG1_FS) ;
 
-  
-  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_OTG_HS, ENABLE) ;   
+//  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_OTG_HS, ENABLE) ;   
+  RCC_AHB2PeriphClockCmd( RCC_AHB2Periph_OTG_FS, ENABLE) ;   
 }
 /**
 * @brief  USB_OTG_BSP_EnableInterrupt
@@ -120,10 +119,10 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 */
 void USB_OTG_BSP_EnableInterrupt(USB_OTG_CORE_HANDLE *pdev)
 {
-  NVIC_InitTypeDef NVIC_InitStructure; 
+ NVIC_InitTypeDef NVIC_InitStructure; 
   
 //  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-  NVIC_InitStructure.NVIC_IRQChannel = OTG_HS_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannel = OTG_FS_IRQn;
 
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 4;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -150,11 +149,11 @@ void USB_OTG_STOP(void)
 {
   NVIC_InitTypeDef NVIC_InitStructure; 
  
-  NVIC_InitStructure.NVIC_IRQChannel = OTG_HS_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannel = OTG_FS_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
   NVIC_Init(&NVIC_InitStructure);
   
-  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_OTG_HS, DISABLE) ; 
+  RCC_AHB2PeriphClockCmd( RCC_AHB2Periph_OTG_FS, DISABLE) ;  
 }
 
 /**

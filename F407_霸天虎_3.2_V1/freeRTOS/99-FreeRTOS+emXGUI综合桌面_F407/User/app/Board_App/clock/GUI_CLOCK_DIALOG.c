@@ -20,7 +20,7 @@ struct
 	uint8_t dial;    // 选中的表盘
 }Set_Start;
 
-uint8_t clock_dial = 0;    // 表盘
+uint8_t clock_dial = 2;    // 表盘
 static HWND clock_hwnd;
 
 const WCHAR Week_List[][4] = {{L"星期一"}, {L"星期二"}, {L"星期三"}, {L"星期四"}, {L"星期五"}, {L"星期六"}, {L"星期日"}};
@@ -89,7 +89,7 @@ const clock_hdc_t clock_png_info[hdc_clock_end] =
 
 };
 
-/* HDC */
+///* HDC */
 static HDC hdc_clock_bk;
 static HDC hdc_clock_png[hdc_clock_end];
 
@@ -353,7 +353,7 @@ static void Dial_OwnerDraw(DRAWITEM_HDR *ds)  // 绘制表盘
 {
   HDC hdc;
 	RECT rc, rc_tmp;
-//  RTC_TIME rtc_time;
+  RTC_TIME rtc_time;
   HWND hwnd;
   int clock_back;
   BITMAP clock_s, clock_m, clock_h;
@@ -367,33 +367,16 @@ static void Dial_OwnerDraw(DRAWITEM_HDR *ds)  // 绘制表盘
 
   BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_clock_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
   
-  struct rtc_time systmtime;
-  RTC_TimeCovr(&systmtime);
-  Hour = systmtime.tm_hour;
-  Min  = systmtime.tm_min;
-  Sec  = systmtime.tm_sec;
-  
-//  drv_clock.Date_day=rtc_time.RTC_Date.RTC_Date;
-//  drv_clock.Date_month=rtc_time.RTC_Date.RTC_Month;
-//  drv_clock.Date_year=rtc_time.RTC_Date.RTC_Year;
-  /* Unfreeze the RTC DR Register */
+  RTC_GetTime(RTC_Format_BIN, &rtc_time.RTC_Time);
 
-//  if (clock_dial == 0)    
-//  {
-//    clock_back = hdc_clock_back_00;
-//    clock_h = bm_clock_h_00;
-//    clock_m = bm_clock_m_00;
-//    clock_s = bm_clock_s_00;
-//  }
-//  else if (clock_dial == 1)
-//  {
-//    clock_back = hdc_clock_back_01;
-//    clock_h = bm_clock_h_01;
-//    clock_m = bm_clock_m_01;
-//    clock_s = bm_clock_s_01;
-//  }
-//  else
-//    if (clock_dial == 2)
+  Hour=rtc_time.RTC_Time.RTC_Hours;
+  Min=rtc_time.RTC_Time.RTC_Minutes;
+  Sec=rtc_time.RTC_Time.RTC_Seconds;
+
+  (void)RTC->DR;
+  
+
+
   {
     clock_back = hdc_clock_back_02;
     clock_h = bm_clock_h_02;
@@ -762,48 +745,47 @@ static LRESULT setting_win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 //              else 
               if (Set_Start.page == 0)    // 修改表盘和时间
               {
-                struct rtc_time systmtime;
-                RTC_TimeCovr(&systmtime);    // 不修改日期，读出日期
+                RTC_TimeTypeDef RTC_Time;
 
-                // clock_dial = Set_Start.dial;    // 设置表盘
-                systmtime.tm_hour = GetListCurselVal(hwnd, ID_CLOCK_SetHour);        // 读取列表的时
-                systmtime.tm_min = GetListCurselVal(hwnd, ID_CLOCK_SetMinute);       // 读取列表的分
-                systmtime.tm_sec = 0;
+                clock_dial = Set_Start.dial;    // 设置表盘
+                RTC_Time.RTC_Hours = GetListCurselVal(hwnd, ID_CLOCK_SetHour);        // 读取列表的时
+                RTC_Time.RTC_Minutes = GetListCurselVal(hwnd, ID_CLOCK_SetMinute);    // 读取列表的分
+                RTC_Time.RTC_Seconds = 0;
 
-                Time_Adjust(&systmtime);    // 设置时间
+                RTC_SetTime(RTC_Format_BIN, &RTC_Time);    // 设置时间
               }
               else if (Set_Start.page == 1)    // 修改表盘、时间和日历
-              {
-               struct rtc_time systmtime;
+               {
+                RTC_DateTypeDef RTC_Date;
+                RTC_TimeTypeDef RTC_Time;
 
-              //  clock_dial = Set_Start.dial;    // 设置表盘
+                clock_dial = Set_Start.dial;    // 设置表盘
 
-               systmtime.tm_hour = GetListCurselVal(hwnd, ID_CLOCK_SetHour);        // 读取列表的时
-               systmtime.tm_min  = GetListCurselVal(hwnd, ID_CLOCK_SetMinute);      // 读取列表的分
-               systmtime.tm_sec  = 0;
+                RTC_Time.RTC_Hours = GetListCurselVal(hwnd, ID_CLOCK_SetHour);        // 读取列表的时
+                RTC_Time.RTC_Minutes = GetListCurselVal(hwnd, ID_CLOCK_SetMinute);    // 读取列表的分
+                RTC_Time.RTC_Seconds = 0;
+                RTC_SetTime(RTC_Format_BIN, &RTC_Time);    // 设置时间
 
-               systmtime.tm_year = GetListCurselVal(hwnd, ID_CLOCK_SetYear);    // 读取列表的年
-               systmtime.tm_mon  = GetListCurselVal(hwnd, ID_CLOCK_SetMonth);          // 读取列表的月
-               systmtime.tm_mday = GetListCurselVal(hwnd, ID_CLOCK_SetDate);           // 读取列表的日
+                RTC_Date.RTC_Year = GetListCurselVal(hwnd, ID_CLOCK_SetYear) - 2000;    // 读取列表的年
+                RTC_Date.RTC_Month = GetListCurselVal(hwnd, ID_CLOCK_SetMonth);         // 读取列表的月
+                RTC_Date.RTC_Date = GetListCurselVal(hwnd, ID_CLOCK_SetDate);           // 读取列表的日
+                /* 基姆拉尔森周计算公式 */
+                RTC_Date.RTC_WeekDay = (RTC_Date.RTC_Date + 2 * RTC_Date.RTC_Month + 3     \
+                                        * (RTC_Date.RTC_Month + 1) / 5 + RTC_Date.RTC_Year \
+                                        + RTC_Date.RTC_Year / 4 - RTC_Date.RTC_Year / 100  \
+                                        + RTC_Date.RTC_Year / 400) % 7 + 1;
+                RTC_SetDate(RTC_Format_BIN, &RTC_Date);                                 // 设置日期
 
-               /* 基姆拉尔森周计算公式 (Time_Adjust()函数内部计算，不在这里计算) */
-              //  systmtime.tm_wday = (systmtime.tm_mday + 2 * systmtime.tm_mon + 3     \
-              //                          * systmtime.tm_mon + 1) / 5 + systmtime.tm_year \
-              //                          + systmtime.tm_year / 4 - systmtime.tm_year / 100  \
-              //                          + systmtime.tm_year / 400) % 7 + 1;
-
-               Time_Adjust(&systmtime);    // 设置时间
-
-               /* 设置当前显示日期 */
-               WCHAR wbuf[5];
-               
-               x_wsprintf(wbuf, L"%d", systmtime.tm_mday);
-               SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_DAY), wbuf);    // 设置日期
-               
-               x_wsprintf(wbuf, L"%d月", systmtime.tm_mon);
-               SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_MONTH), wbuf);    // 设置月
-               
-               SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_WEEK), Week_List[systmtime.tm_wday - 1]);    // 设置星期
+                /* 设置当前显示日期 */
+                WCHAR wbuf[5];
+                
+                x_wsprintf(wbuf, L"%d", RTC_Date.RTC_Date);
+                SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_DAY), wbuf);    // 设置日期
+                
+                x_wsprintf(wbuf, L"%d月", RTC_Date.RTC_Month);
+                SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_MONTH), wbuf);    // 设置月
+                
+                SetWindowText(GetDlgItem(clock_hwnd, ID_CLOCK_WEEK), Week_List[RTC_Date.RTC_WeekDay - 1]);    // 设置星期
               }
 
               PostCloseMessage(hwnd);    // 发送关闭窗口的消息
@@ -1227,16 +1209,16 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         /* 初始化日期 */
         WCHAR wbuf[5];
-        struct rtc_time systmtime;
-        RTC_TimeCovr(&systmtime);
+        RTC_TIME rtc_time;
+        RTC_GetDate(RTC_Format_BIN, &rtc_time.RTC_Date);
         
-        x_wsprintf(wbuf, L"%d", systmtime.tm_mday);
+        x_wsprintf(wbuf, L"%d", rtc_time.RTC_Date.RTC_Date);
         SetWindowText(GetDlgItem(hwnd, ID_CLOCK_DAY), wbuf);    // 设置日期
         
-        x_wsprintf(wbuf, L"%d月", systmtime.tm_mon);
+        x_wsprintf(wbuf, L"%d月", rtc_time.RTC_Date.RTC_Month);
         SetWindowText(GetDlgItem(hwnd, ID_CLOCK_MONTH), wbuf);    // 设置月
         
-        SetWindowText(GetDlgItem(hwnd, ID_CLOCK_WEEK), Week_List[systmtime.tm_wday]);    // 设置星期
+        SetWindowText(GetDlgItem(hwnd, ID_CLOCK_WEEK), Week_List[rtc_time.RTC_Date.RTC_WeekDay - 1]);    // 设置星期
 
         SetTimer(hwnd, 1, 400, TMR_START, NULL);
         
@@ -1265,18 +1247,19 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				if (tmr_id == 1)
         {
           WCHAR wbuf[5];
-          struct rtc_time systmtime;
-          RTC_TimeCovr(&systmtime);
-
-          x_wsprintf(wbuf, L"%d", systmtime.tm_mday);
+          
+          RTC_TIME rtc_time;
+          RTC_GetDate(RTC_Format_BIN, &rtc_time.RTC_Date);
+          
+          x_wsprintf(wbuf, L"%d", rtc_time.RTC_Date.RTC_Date);
           SetWindowText(GetDlgItem(hwnd, ID_CLOCK_DAY), wbuf);    // 设置日期
           
-          x_wsprintf(wbuf, L"%d月", systmtime.tm_mon);
+          x_wsprintf(wbuf, L"%d月", rtc_time.RTC_Date.RTC_Month);
           SetWindowText(GetDlgItem(hwnd, ID_CLOCK_MONTH), wbuf);    // 设置月
           
-          SetWindowText(GetDlgItem(hwnd, ID_CLOCK_WEEK), Week_List[systmtime.tm_wday - 1]);    // 设置星期
+          SetWindowText(GetDlgItem(hwnd, ID_CLOCK_WEEK), Week_List[rtc_time.RTC_Date.RTC_WeekDay - 1]);    // 设置星期
           /* Unfreeze the RTC DR Register */
-//          (void)RTC->DR;
+          (void)RTC->DR;
           
           InvalidateRect(GetDlgItem(hwnd, ID_CLOCK_TIME), NULL, TRUE);
         }

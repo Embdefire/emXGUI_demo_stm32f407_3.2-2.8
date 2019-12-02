@@ -6,6 +6,8 @@
 #include "GUI_SimulateUDisk_Dialog.h"
 #include "emXGUI_JPEG.h"
 #include "emxgui_png.h"
+#include "GUI_Font_XFT.h"
+#include "emXGUI.h"
 
 #include "usbd_msc_core.h"
 #include "usbd_usr.h"
@@ -27,17 +29,17 @@ static HDC hdc_btn;
 static void _ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 {
   HDC hdc;
-  RECT rc;
-//  HWND hwnd;
+  RECT rc, rc_tmp;
+  HWND hwnd;
 
 	hdc = ds->hDC;   
 	rc = ds->rc; 
-//  hwnd = ds->hwnd;
+  hwnd = ds->hwnd;
 
-//  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-//  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
+  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
+  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-//  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
@@ -102,31 +104,68 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       GetClientRect(hwnd, &rc);
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  444,  0,  36,  36, hwnd, eID_SUD_EXIT, NULL, NULL);
+                  286, 10, 23, 23, hwnd, eID_SUD_EXIT, NULL, NULL);
 
       CreateWindow(BUTTON, L"连接", WS_TRANSPARENT| BS_NOTIFY | WS_VISIBLE | BS_3D|WS_OWNERDRAW,
-                  190, 222, 100,  40, hwnd, eID_SUD_LINK, NULL, NULL);    // 使用时钟的按钮背景
+                  123, 197,  71,  30, hwnd, eID_SUD_LINK, NULL, NULL);    // 使用时钟的按钮背景
       
-    //   BOOL res;
-    //   u8 *jpeg_buf;
-    //   u32 jpeg_size;
-    //   JPG_DEC *dec;
-    //   // res = RES_Load_Content(GUI_SUD_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-    //   res = FS_Load_Content(GUI_SUD_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
-    //   bk_hdc = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
-    //   if(res)
-    //   {
-    //     /* 根据图片数据创建JPG_DEC句柄 */
-    //     dec = JPG_Open(jpeg_buf, jpeg_size);
+      BOOL res;
+      u8 *jpeg_buf;
+      u32 jpeg_size;
+      JPG_DEC *dec;
+      res = RES_Load_Content(GUI_UDISK_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
+//      res = FS_Load_Content(GUI_UDISK_BACKGROUNG_PIC, (char**)&jpeg_buf, &jpeg_size);
+      hdc_bk = CreateMemoryDC(SURF_SCREEN, GUI_XSIZE, GUI_YSIZE);
+      if(res)
+      {
+       /* 根据图片数据创建JPG_DEC句柄 */
+       dec = JPG_Open(jpeg_buf, jpeg_size);
 
-    //     /* 绘制至内存对象 */
-    //     JPG_Draw(bk_hdc, 0, 0, dec);
+       /* 绘制至内存对象 */
+       JPG_Draw(hdc_bk, 0, 0, dec);
 
-    //     /* 关闭JPG_DEC句柄 */
-    //     JPG_Close(dec);
-    //   }
-    //   /* 释放图片内容空间 */
-    //   RES_Release_Content((char **)&jpeg_buf);
+       /* 关闭JPG_DEC句柄 */
+       JPG_Close(dec);
+      }
+      /* 释放图片内容空间 */
+      RES_Release_Content((char **)&jpeg_buf);
+      
+      u8 *pic_buf;
+      u32 pic_size;
+      PNG_DEC *png_dec;
+      BITMAP png_bm;
+      
+
+      /* 创建 HDC */
+      hdc_btn = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
+      ClrDisplay(hdc_btn, NULL, 0);
+      res = RES_Load_Content(GUI_UDISK_BTN_PIC, (char**)&pic_buf, &pic_size);
+//            res = FS_Load_Content(GUI_UDISK_BTN_PIC, (char**)&pic_buf, &pic_size);
+      if(res)
+      {
+        png_dec = PNG_Open(pic_buf, pic_size);
+        PNG_GetBitmap(png_dec, &png_bm);
+        DrawBitmap(hdc_btn, 0, 0, &png_bm, NULL);
+        PNG_Close(png_dec);
+      }
+      /* 释放图片内容空间 */
+      RES_Release_Content((char **)&pic_buf);
+      
+      /* 创建 HDC */
+      hdc_btn_press = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
+      ClrDisplay(hdc_btn_press, NULL, 0);
+      res = RES_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
+//      res = FS_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
+      if(res)
+      {
+        png_dec = PNG_Open(pic_buf, pic_size);
+        PNG_GetBitmap(png_dec, &png_bm);
+        DrawBitmap(hdc_btn_press, 0, 0, &png_bm, NULL);
+        PNG_Close(png_dec);
+      }
+      /* 释放图片内容空间 */
+      RES_Release_Content((char **)&pic_buf);
+
 
       break;
     } 
@@ -153,7 +192,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       // SetBrushColor(hdc, MapRGB(hdc, 0, 0, 0));
       // FillRect(hdc, &rc);
       
-      //BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc.x, rc.y, SRCCOPY);    // 使用与时钟APP相同的背景
+      BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc.x, rc.y, SRCCOPY);    // 使用与时钟APP相同的背景
 
       return TRUE;
     }
@@ -162,16 +201,16 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
       HDC hdc;
       PAINTSTRUCT ps;
-      RECT rc  = {0, 80, GUI_XSIZE, 112};
-      RECT rc1 = {100, 0, 280, 45};
+      RECT rc  = {0, 45, GUI_XSIZE, 150};
+      RECT rc1 = {50, 0, 220, 40};
 
       hdc = BeginPaint(hwnd, &ps);
       
       SetFont(hdc, defaultFont); 
       SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
       DrawText(hdc, L"外部FLASH模拟U盘", -1, &rc1, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
-      SetTextInterval(hdc, -1, 20);
-      DrawText(hdc, L"本应用使用外部FLASH的后10M模拟U盘\r\n请在点击连接前使用Micro USB\r\n数据线连接开发板的J24到电脑！", -1, &rc, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
+      SetTextInterval(hdc, -1, 16);
+      DrawText(hdc, L"本应用使用外部FLASH的后512K模拟U盘\r\n请在点击连接前使用Micro USB\r\n数据线连接开发板的J24到电脑！", -1, &rc, DT_VCENTER|DT_CENTER);//绘制文字(居中对齐方式)
    
       EndPaint(hwnd, &ps);
 
@@ -228,17 +267,11 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 {
                     case BN_CLICKED:
                     {
-                        /*!< At this stage the microcontroller clock setting is already configured, 
-                        this is done through SystemInit() function which is called from startup
-                        file (startup_stm32fxxx_xx.s) before to branch to application main.
-                        To reconfigure the default setting of SystemInit() function, refer to
-                        system_stm32fxxx.c file
-                        */       
                         USBD_Init(&USB_OTG_dev,
-                                  USB_OTG_HS_CORE_ID,
-                                  &USR_desc,
-                                  &USBD_MSC_cb, 
-                                  &USR_cb);
+																	USB_OTG_FS_CORE_ID,
+																	&USR_desc,
+																	&USBD_MSC_cb, 
+																	&USR_cb);
                       
                       SetWindowText(GetDlgItem(hwnd, eID_SUD_LINK), L"已连接");
                       EnableWindow(GetDlgItem(hwnd, eID_SUD_LINK), FALSE);

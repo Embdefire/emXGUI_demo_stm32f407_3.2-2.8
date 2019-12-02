@@ -99,9 +99,6 @@ static void BSP_Init(void)
 	FSMC_InitSRAM();
 	FSMC_InitLCD();
   
-	
-	
-  
     /*hardfault ¸ú×ÙÆ÷³õÊ¼»¯*/  
   cm_backtrace_init("Fire_FreeRTOS", HARDWARE_VERSION, SOFTWARE_VERSION);
 		

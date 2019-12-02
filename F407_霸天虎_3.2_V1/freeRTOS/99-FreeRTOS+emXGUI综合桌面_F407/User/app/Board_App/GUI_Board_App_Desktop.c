@@ -150,7 +150,7 @@ static const struct __obj_list menu_list_1[] = {
       L"模拟U盘",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE, GUI_LED_KEY_Dialog,
 
-//      L"时钟",		    NULL,	  L"H", RGB_WHITE, GUI_CLOCK_DIALOG,
+      L"时钟",		    NULL,	  L"H", RGB_WHITE, GUI_CLOCK_DIALOG,
       L"电话",	      NULL, 	L"T", RGB_WHITE, GUI_Phone_Dialog,
       L"短信",	      NULL,   L"U", RGB_WHITE, GUI_SMS_Dialog,
       L"设置",	     NULL,	  L"h", RGB_WHITE, GUI_Settings_DIALOG,

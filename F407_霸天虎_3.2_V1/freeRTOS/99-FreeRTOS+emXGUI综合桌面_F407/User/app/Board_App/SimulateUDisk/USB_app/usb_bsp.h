@@ -52,8 +52,8 @@
 
 
 #define USB_DEBUG_ON         1
-#define USB_DEBUG_ARRAY_ON   0
-#define USB_DEBUG_FUNC_ON    0
+#define USB_DEBUG_ARRAY_ON   1
+#define USB_DEBUG_FUNC_ON    1
 
 
 // Log define
