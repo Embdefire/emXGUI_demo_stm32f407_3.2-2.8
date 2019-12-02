@@ -50,12 +50,12 @@ __initial_sp
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Heap_Size       EQU     0x00020000
+Heap_Size       EQU     0x00004000
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
 Heap_Mem        SPACE   Heap_Size
-__heap_limit    EQU     0x6C100000    
+__heap_limit    ;QU     0x6C100000    
 
                 PRESERVE8
                 THUMB

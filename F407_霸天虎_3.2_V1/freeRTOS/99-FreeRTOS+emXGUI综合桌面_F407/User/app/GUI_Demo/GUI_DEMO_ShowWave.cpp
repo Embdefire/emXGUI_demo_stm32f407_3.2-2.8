@@ -1168,7 +1168,7 @@ static	LRESULT	WinProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
         CopyRect(&cb_rc,&rc);
         cb_rc.x -= 2;
         cb_rc.h -= 5;
-        cb_rc.y += 10;
+        cb_rc.y += 5;
         cb_rc.w = cb_rc.h;
 
         //创建单选按钮(GroupID号为1).

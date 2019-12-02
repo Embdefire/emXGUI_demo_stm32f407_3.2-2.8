@@ -4,13 +4,6 @@
 #include <inttypes.h>
 #include "Backend_mp3Player.h"
 
-/* RECBUFFER_SIZE决定两个缓存区大小，实际每个缓存区占用RAM空间字节数为：RECBUFFER_SIZE*2
- * 对于选择I2S_AudioFreq_16k采样率使用RECBUFFER_SIZE为1024*4，就可保证录音及放音效果流畅，
- * 如果选择其他更高采样率需要适当调整用RECBUFFER_SIZE大小，比如当选择择I2S_AudioFreq_44k
- * 是设置RECBUFFER_SIZE为1024*8
- * 另外，SD卡本身的读写速度也在一定性能上影响录音效果
- */
-#define RECBUFFER_SIZE  1024*8
 
 /* 录音文件存放路径 */
 #define RECORDERDIR	"0:/recorder"

@@ -63,16 +63,16 @@ uint8_t chgsch=0; //调整进度条标志位
 char music_name[FILE_NAME_LEN] __EXRAM;//歌曲名数组
 //文件系统相关变量
 FRESULT f_result; 
-FIL     f_file __EXRAM;
+extern FIL   file __EXRAM;
 UINT    f_num;
 //歌词数组--存放歌词数据
-uint8_t ReadBuffer1[1024*5] __EXRAM;
+uint8_t ReadBuffer1[1024/2*3] __EXRAM; //歌词滑动进度条歌词卡死或不同步可增大此值
 //MINI播放键、上一首、下一首控件句柄句柄
 //static HWND mini_start;
 //歌词显示标志位
 //static int show_lrc = 0;
 //歌词结构体
-LYRIC lrc  __EXRAM;
+LYRIC lrc ;// __EXRAM;
 static HDC hdc_bk;
 static HWND wnd;//音量滑动条窗口句柄 
 //static HWND wnd_horn;//音量滑动条窗口句柄 
@@ -80,17 +80,8 @@ static HWND wnd_power;//音量icon句柄
 extern const unsigned char gImage_0[]; 
 GUI_SEM *exit_sem = NULL;
 /*============================================================================*/
-//static BITMAP bm_0;
-//static HDC rotate_disk_hdc;
 
-//static SURFACE *pSurf;
-//static HDC hdc_mem11=NULL;
 SCROLLINFO sif_power;
-//SCROLLINFO sif_power_horn;
-//SCROLLINFO sif_power_horn;
-//HFONT Music_Player_hFont48=NULL;
-//HFONT Music_Player_hFont64  =NULL;
-//HFONT Music_Player_hFont72  =NULL;
 
 /***********************外部声明*************************/
 extern void	GUI_MusicList_DIALOG(void);
@@ -385,11 +376,11 @@ static void App_PlayMusic(HWND hwnd)
          lrc.oldtime=0;
          lrc.curtime=0;
          //打开歌词文件
-         f_result=f_open(&f_file, music_name,FA_OPEN_EXISTING | FA_READ);
+         f_result=f_open(&file, music_name,FA_OPEN_EXISTING | FA_READ);
          //打开成功，读取歌词文件，分析歌词文件，同时将flag置1，表示文件读取成功
-         if((f_result==FR_OK)&&(f_file.fsize<COMDATA_SIZE))
+         if((f_result==FR_OK)&&(file.fsize<COMDATA_SIZE))
          {					
-           f_result=f_read(&f_file,ReadBuffer1, sizeof(ReadBuffer1),&f_num);		
+           f_result=f_read(&file,ReadBuffer1, sizeof(ReadBuffer1),&f_num);		
            if(f_result==FR_OK) 
            {  
               lyric_analyze(&lrc,ReadBuffer1);
@@ -403,7 +394,7 @@ static void App_PlayMusic(HWND hwnd)
             printf("读取歌词失败\n");
          }
          //关闭文件
-			   f_close(&f_file);	 
+			   f_close(&file);	 
 #endif
          i = 0;
          //得到播放曲目的文件名

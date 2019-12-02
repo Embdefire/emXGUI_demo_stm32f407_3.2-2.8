@@ -28,7 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "lwip/opt.h"
 #include "./LAN8742A/stm32f429_eth.h"
-#include "./LAN8742A/LAN8742A.h"
+#include "./LAN8742A.h"
 #include "netif.h"
 #include "netconf.h"
 #include "lwip/dhcp.h"

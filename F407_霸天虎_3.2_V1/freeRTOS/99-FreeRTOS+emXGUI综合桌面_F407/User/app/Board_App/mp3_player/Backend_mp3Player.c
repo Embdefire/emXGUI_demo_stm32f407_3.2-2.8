@@ -38,8 +38,8 @@
 /* 处理立体声音频数据时，输出缓冲区需要的最大大小为2304*16/8字节(16为PCM数据为16位)，
  * 这里我们定义MP3BUFFER_SIZE为2304，实际输出缓冲区为MP3BUFFER_SIZE*2个字节
  */
-#define MP3BUFFER_SIZE  2304		
-#define INPUTBUF_SIZE   3000	
+#define MP3BUFFER_SIZE  2304	
+#define INPUTBUF_SIZE   1940/4*3	//拖动进度条的时候不能太快，为了避免卡死可增大这个值，
 /**********************************/
 
 
@@ -59,8 +59,8 @@ FRESULT result;
 UINT bw;            					/* File R/W count */
 /*wav播放器*/
 REC_TYPE Recorder;          /* 录音设备 */
-uint16_t buffer0[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区1 ，实际占用字节数：RECBUFFER_SIZE*2 */
-uint16_t buffer1[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区2 ，实际占用字节数：RECBUFFER_SIZE*2 */
+uint16_t music_buffer0[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区1 ，实际占用字节数：RECBUFFER_SIZE*2 */
+uint16_t music_buffer1[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区2 ，实际占用字节数：RECBUFFER_SIZE*2 */
 static WavHead rec_wav;            /* WAV设备  */
 
 
@@ -70,8 +70,8 @@ uint32_t g_FmtList[FMT_COUNT][3] =
 	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_16k},
 	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_22k},
 	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_44k},
-	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_96k},
-	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_192k},
+//	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_96k},
+//	{I2S_Standard_Phillips, I2S_DataFormat_16b, I2S_AudioFreq_192k},
 };
 RECT rc_MusicTimes = {285, 404,240,72};//歌曲时长
 RECT rc_cli = {0, 380, 800, 20};//进度条
@@ -595,8 +595,8 @@ void wavplayer(const char *wavfile, uint8_t vol, HDC hdc, HWND hwnd)
 //         DrawText(hdc, wbuf, -1, &rc_MusicTimes, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
       }   
       //先读取音频数据到缓冲区
-      result = f_read(&file,(uint16_t *)buffer0,RECBUFFER_SIZE*2,&bw);
-      result = f_read(&file,(uint16_t *)buffer1,RECBUFFER_SIZE*2,&bw);
+      result = f_read(&file,(uint16_t *)music_buffer0,RECBUFFER_SIZE*2,&bw);
+      result = f_read(&file,(uint16_t *)music_buffer1,RECBUFFER_SIZE*2,&bw);
       
       Delay_ms(10);	/* 延迟一段时间，等待I2S中断结束 */
       I2S_Stop();			/* 停止I2S录音和放音 */
@@ -631,7 +631,7 @@ void wavplayer(const char *wavfile, uint8_t vol, HDC hdc, HWND hwnd)
       DMA_ITConfig(I2Sxext_RX_DMA_STREAM,DMA_IT_TC,DISABLE);//开启传输完成中断
       I2Sxext_Recorde_Stop();
       
-      I2Sx_TX_DMA_Init(buffer0,buffer1,RECBUFFER_SIZE);		
+      I2Sx_TX_DMA_Init(music_buffer0,music_buffer1,RECBUFFER_SIZE);		
       I2S_Play_Start();
    }
    /* 进入主程序循环体 */
@@ -761,9 +761,9 @@ void wavplayer(const char *wavfile, uint8_t vol, HDC hdc, HWND hwnd)
          }
          timecount++;
          if(bufflag==0)
-            result = f_read(&file,buffer0,RECBUFFER_SIZE*2,&bw);	
+            result = f_read(&file,music_buffer0,RECBUFFER_SIZE*2,&bw);	
          else
-            result = f_read(&file,buffer1,RECBUFFER_SIZE*2,&bw);
+            result = f_read(&file,music_buffer1,RECBUFFER_SIZE*2,&bw);
          /* 播放完成或读取出错停止工作 */
          if((result!=FR_OK)||(file.fptr==file.fsize))
          {

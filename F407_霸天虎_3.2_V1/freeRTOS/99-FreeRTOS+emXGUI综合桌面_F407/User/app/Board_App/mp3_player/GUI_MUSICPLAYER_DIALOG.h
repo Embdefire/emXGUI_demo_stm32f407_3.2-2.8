@@ -3,16 +3,16 @@
 
 
 #define MUSIC_MAX_NUM           20
-#define FILE_NAME_LEN           100			
-#define MUSIC_NAME_LEN          100		
+#define FILE_NAME_LEN           50			
+#define MUSIC_NAME_LEN          50		
 #define LYRIC_MAX_SIZE          200				
 #define MAX_LINE_LEN            200				
 #define _DF1S                   0x81
 #define BUFFER_SIZE             1024*8
 #define COMDATA_SIZE				  1024*5
 #define COMDATA_UTF8_SIZE		  1024*2
-#define MP3BUFFER_SIZE          2304		
-#define INPUTBUF_SIZE           3000	
+
+
 
 #define LRC_GBK   1  //1±íÊ¾LRC¸è´ÊÎªGBK±àÂë£¬0±íÊ¾UTF8±àÂë
 #define ID_TB1               0x1301
@@ -59,7 +59,7 @@ extern HWND wnd_lrc2;//¸è´Ê´°¿Ú¾ä±ú
 extern HWND wnd_lrc3;//¸è´Ê´°¿Ú¾ä±ú
 extern HWND wnd_lrc4;//¸è´Ê´°¿Ú¾ä±ú
 extern HWND wnd_lrc5;//¸è´Ê´°¿Ú¾ä±ú
-extern uint8_t ReadBuffer1[1024*5];
+extern uint8_t ReadBuffer1[];
 
 extern HFONT Music_Player_hFont48;
 extern HFONT Music_Player_hFont64;

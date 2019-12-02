@@ -1,5 +1,6 @@
 #include "emXGUI.h"
 #include "GUI_RECORDER_DIALOG.h"
+#include "GUI_MUSICPLAYER_DIALOG.h"
 #include "x_libc.h"
 #include "string.h"
 #include "ff.h"
@@ -46,7 +47,7 @@ extern int play_index;      // 播放歌曲的编号值
 extern HWND music_wnd_time; // 歌曲进度条窗口句柄
 extern uint8_t chgsch;      // 调整进度条标志位
 
-static char path[100];     // 文件根目录
+static char path[50];     // 文件根目录
 static int  power = 20;    // 音量值
 
 /**
@@ -126,14 +127,14 @@ static FRESULT scan_record_files(char* path)
 extern uint8_t Isread;              /* DMA传输完成标志 */
 extern uint8_t bufflag;             /* 数据缓存区选择标志 */
 extern uint32_t wavsize;            /* wav音频数据大小 */
-extern FIL record_file __EXRAM;			/* file objects */
+extern FIL file __EXRAM;			/* file objects */
 extern char recfilename[25]; 
 extern WavHead rec_wav;             /* WAV设备  */
 extern FRESULT result; 
 extern UINT bw;            					/* File R/W count */
 extern REC_TYPE Recorder;           /* 录音设备 */
-extern uint16_t record_buffer0[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区1 ，实际占用字节数：RECBUFFER_SIZE*2 */
-extern uint16_t record_buffer1[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区2 ，实际占用字节数：RECBUFFER_SIZE*2 */
+extern uint16_t music_buffer0[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区1 ，实际占用字节数：RECBUFFER_SIZE*2 */
+extern uint16_t music_buffer1[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区2 ，实际占用字节数：RECBUFFER_SIZE*2 */
 
 static void App_Record(void *p)
 {
@@ -146,9 +147,9 @@ static void App_Record(void *p)
 		{
 			Isread=0;
       if(bufflag==0)
-        result=f_write(&record_file,record_buffer0,RECBUFFER_SIZE*2,(UINT*)&bw);//写入文件							
+        result=f_write(&file,music_buffer0,RECBUFFER_SIZE*2,(UINT*)&bw);//写入文件							
       else
-        result=f_write(&record_file,record_buffer1,RECBUFFER_SIZE*2,(UINT*)&bw);//写入文件
+        result=f_write(&file,music_buffer1,RECBUFFER_SIZE*2,(UINT*)&bw);//写入文件
       wavsize+=RECBUFFER_SIZE*2;	
 		}
     GUI_Yield();
@@ -863,10 +864,10 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
               for(i=1;i<0xff;++i)
               {
                 sprintf(recfilename,"0:/recorder/rec%03d.wav",i);
-                result=f_open(&record_file,(const TCHAR *)recfilename,FA_READ);
+                result=f_open(&file,(const TCHAR *)recfilename,FA_READ);
                 if(result==FR_NO_FILE)break;					
               }
-              f_close(&record_file);
+              f_close(&file);
               
               if(i==0xff)
               {
@@ -903,9 +904,9 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 I2S_Play_Stop();
                 rec_wav.size_8=wavsize+36;
                 rec_wav.datasize=wavsize;
-                result=f_lseek(&record_file,0);
-                result=f_write(&record_file,(const void *)&rec_wav,sizeof(rec_wav),&bw);
-                result=f_close(&record_file);
+                result=f_lseek(&file,0);
+                result=f_write(&file,(const void *)&rec_wav,sizeof(rec_wav),&bw);
+                result=f_close(&file);
                 printf("录音结束\r\n");
               }
               //ucRefresh = 1;

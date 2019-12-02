@@ -284,10 +284,13 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             switch (id)
             {
                case ID_LIST_1:
-               {
+							{
                      play_index = nm->idx;//切换至下一首
                      mp3player.ucStatus = STA_SWITCH;	                  
-
+//                  Play_index = ;
+//                  sw_flag = 1;
+                  //PostCloseMessage(hwnd); //产生WM_CLOSE消息关闭主窗口
+                  //menu_list_1[nm->idx].cbStartup(hwnd);
                }
 
                break;
@@ -313,14 +316,14 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          break;
       }      
       case WM_CLOSE: //窗口关闭时，会自动产生该消息.
-			{         
-					 GUI_VMEM_Free(menu_list);
-					 GUI_VMEM_Free(wbuf);
-					 enter_flag = 0;
-					 SetForegroundWindow(MusicPlayer_hwnd);
-				return DestroyWindow(hwnd); //调用DestroyWindow函数销毁窗口，该函数会使主窗口结束并退出消息循环;否则窗口将继续运行.
-			} 
-      //关闭窗口消息处理case
+		{         
+         GUI_VMEM_Free(menu_list);
+         GUI_VMEM_Free(wbuf);
+         enter_flag = 0;
+         SetForegroundWindow(MusicPlayer_hwnd);
+			return DestroyWindow(hwnd); //调用DestroyWindow函数销毁窗口，该函数会使主窗口结束并退出消息循环;否则窗口将继续运行.
+		} 
+    //关闭窗口消息处理case
       case WM_DESTROY:
       {               
         return PostQuitMessage(hwnd);	    // 退出消息循环

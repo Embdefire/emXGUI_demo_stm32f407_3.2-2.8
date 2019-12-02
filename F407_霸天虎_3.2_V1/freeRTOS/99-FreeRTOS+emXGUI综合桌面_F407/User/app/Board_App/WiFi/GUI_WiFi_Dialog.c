@@ -18,12 +18,12 @@ TaskHandle_t wifi_task_handle;
 
 static HWND Receive_Handle;
               
-uint8_t network_start_flag=0;
+//uint8_t network_start_flag=0;
 
 extern struct netif gnetif;
 extern __IO uint8_t EthLinkStatus;
-__IO uint32_t LocalTime = 0; /* this variable is used to create a time reference incremented by 10ms */
-uint16_t bsp_result=0;
+//__IO uint32_t LocalTime = 0; /* this variable is used to create a time reference incremented by 10ms */
+//uint16_t bsp_result=0;
 
 static uint8_t IsConnect=0;
 

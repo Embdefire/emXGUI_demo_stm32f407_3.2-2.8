@@ -41,7 +41,7 @@
 #include "lwip/mem.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
-#include "./LAN8742A/stm32f429_eth.h"
+#include "./stm32f429_eth.h"
 #include "netconf.h"
 #include <string.h>
 

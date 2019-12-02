@@ -2,264 +2,172 @@
 #include <string.h>
 #include <stdio.h>
 #include "x_libc.h"
-#include <stdlib.h>
 #include "GUI_AppDef.h"
-#include "./network/GUI_network_Dialog.h"
-#include "./network/W5500/w5500_conf.h"
-#include "./network/W5500/w5500.h"
-#include "./network/W5500/socket.h"
+#include "netconf.h"
+#include "GUI_Network_Dialog.h"
+#include "tcp_echoclient.h"
+#include "tcp_echoserver.h"
+#include "udp_echoclient.h"
+#include "./LAN8742A.h"
 
 int		number_input_box(int x, int y, int w, int h,
 							const WCHAR *pCaption,
 							WCHAR *pOut,
 							int MaxCount,
 							HWND hwndParent);
-              
+
 /* 单选框 ID */
 #define ID_RB1    (0x1100 | (1<<16))
 #define ID_RB2    (0x1101 | (1<<16))
 #define ID_RB3    (0x1102 | (1<<16))
 
-TaskHandle_t network_task_handle;
+TaskHandle_t Network_Task_Handle;
 
 int8_t NetworkTypeSelection = 0;
 
-static HWND Receive_Handle;
+HWND Send_Handle;
+HWND Receive_Handle;
+HWND Network_Main_Handle;
+              
+uint8_t network_start_flag=0;
 
-static uint8_t netmode=0;    // 0:TCP Clent 1:TCP Server 2:UDP
-static uint8_t IsConnect=0;
-static uint8_t IsNetInit=0;
-static uint8_t comdata[512] __EXRAM;
-static uint8_t link_flag = 0;
+extern struct netif gnetif;
+extern __IO uint8_t EthLinkStatus;
+__IO uint32_t LocalTime = 0; /* this variable is used to create a time reference incremented by 10ms */
+DRV_NETWORK drv_network;
+uint16_t bsp_result=0;
 
-#define TRYCOUNT					10
-
-//eg:text: 192.168.1.10 --> ip[0]=192,ip[1]=168,ip[2]=1,ip[3]=10.
-static uint8_t TextToIP(uint8_t *text,uint8_t *ip)
+/**
+  * @brief  通用定时器3中断初始化
+  * @param  period : 自动重装值。
+  * @param  prescaler : 时钟预分频数
+  * @retval 无
+  * @note   定时器溢出时间计算方法:Tout=((period+1)*(prescaler+1))/Ft us.
+  *          Ft=定时器工作频率,为SystemCoreClock/2=90,单位:Mhz
+  */
+static void TIM3_Config(uint16_t period,uint16_t prescaler)
 {
-	uint8_t i,j,tmp[3]={0};
-	int8_t dot[5]={0};
-	i=0;
-	j=0;
-	while((i<15)&&(text[i]!='\0'))
-	{
-		if(!((text[i]>='0'&&text[i]<='9')||(text[i]=='.')))
-			return 1;
-		if(text[i]=='.')
-		{				
-			++j;	
-			dot[j]=i;				
-			if(j>3||i==0)return 1;
-		}			
-		++i;		
-	}
-	if(j<3) return 1;
-	dot[4]=i;
-	if(((dot[2]-dot[1])<=1)||((dot[3]-dot[2])<=1)||((dot[4]-dot[3])<=1)) return 1;	
-	dot[0]=-1;
-	for(i=0;i<4;++i)
-	{
-		j=dot[i+1]-dot[i]-1;
-		if(j==1){tmp[0]='0';tmp[1]='0';tmp[2]=text[dot[i]+1];}
-		else if(j==2){tmp[0]='0';tmp[1]=text[dot[i]+1];tmp[2]=text[dot[i]+2];}
-		else if(j==3){tmp[0]=text[dot[i]+1];tmp[1]=text[dot[i]+2];tmp[2]=text[dot[i]+3];}
-		ip[i]=100*(tmp[0]-'0')+10*(tmp[1]-'0')+tmp[2]-'0';
-	}
-	return 0;
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);  ///使能TIM3时钟
+	
+	TIM_TimeBaseInitStructure.TIM_Prescaler=prescaler;  //定时器分频
+	TIM_TimeBaseInitStructure.TIM_CounterMode=TIM_CounterMode_Up; //向上计数模式
+	TIM_TimeBaseInitStructure.TIM_Period=period;   //自动重装载值
+	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1; 
+	
+	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseInitStructure);
+	
+	TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE); //允许定时器3更新中断
+	TIM_Cmd(TIM3,ENABLE); //使能定时器3
+	
+	NVIC_InitStructure.NVIC_IRQChannel=TIM3_IRQn; //定时器3中断
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0x01; //抢占优先级1
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority=0x03; //子优先级3
+	NVIC_InitStructure.NVIC_IRQChannelCmd=ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
-/* 设置接收窗口的文本 */
-void receive_win_set(const char *data, uint32_t rec_len)
+#ifdef   AAAA// 在Backend_vidoplayer.c中实现
+/**
+  * @brief  定时器3中断服务函数
+  * @param  无
+  * @retval 无
+  */
+void TIM3_IRQHandler(void)
 {
-  uint32_t WinTexeLen = 0;
-  WCHAR *wbuf;
-  WCHAR *wbuf_rec;
-  
-  WinTexeLen = GetWindowTextLength(Receive_Handle) + 1;                       // 获取文本长度
-  wbuf = (WCHAR *)GUI_VMEM_Alloc(WinTexeLen*sizeof(WCHAR) + rec_len*sizeof(WCHAR));    // 申请文本长度 + 新消息长度的内存
-  wbuf_rec =  (WCHAR *)GUI_VMEM_Alloc((rec_len + 1)*sizeof(WCHAR));    // 申请文本长度 + 新消息长度的内存
-
-  if (wbuf != NULL)
+	if(TIM_GetITStatus(TIM3,TIM_IT_Update)==SET) //溢出中断
+	{
+		LocalTime+=10;//10ms增量
+	}
+	TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除中断标志位
+}
+#endif
+void Network_Dispose_Task(void *p) 
+{
+  if(network_start_flag==0)
   {
-    if (wbuf_rec != NULL)
+    /* Configure ethernet (GPIOs, clocks, MAC, DMA) */
+    if(ETH_BSP_Config()==1)
     {
-      GetWindowText(Receive_Handle, wbuf, WinTexeLen+1);                      // 得到原文本
-      x_mbstowcs(wbuf_rec, data, rec_len*
-      sizeof(WCHAR));
-      x_wstrcat(wbuf, wbuf_rec);                                              // 追加新文本
-      SetWindowText(Receive_Handle, wbuf);                                    // 设置接收窗口的文本
-      GUI_VMEM_Free(wbuf_rec);                                                // 释放申请的内存
+      network_start_flag=0;
+      bsp_result |=1;
+      /* 初始化出错 */
+      SetTimer(Network_Main_Handle, 10, 100, TMR_SINGLE|TMR_START, NULL);
+      vTaskSuspend(Network_Task_Handle);    // 挂起自己 不在执行 
     }
-    
-    GUI_VMEM_Free(wbuf);                                                // 释放申请的内存
+    else
+    {
+      network_start_flag=1;
+      bsp_result &=~ 1;  
+    }
+
   }
-}
-
-/**
-*@brief		TCP Server回环演示函数。
-*@param		无
-*@return	无
-*/
-void do_tcp_server(HWND hwnd)
-{	
-	uint16 len=0;  
-	switch(getSn_SR(SOCK_TCPS))											            	/*获取socket的状态*/
-	{
-		case SOCK_CLOSED:													                  /*socket处于关闭状态*/
-			socket(SOCK_TCPS ,Sn_MR_TCP,local_port,Sn_MR_ND);	        /*打开socket*/
-		  break;     
-    
-		case SOCK_INIT:														                  /*socket已初始化状态*/
-			listen(SOCK_TCPS);												                /*socket建立监听*/
-		  break;
-		
-		case SOCK_ESTABLISHED:												              /*socket处于连接建立状态*/
-      
-      if (link_flag)
-      {
-        SetWindowText(GetDlgItem(hwnd, eID_BTN_STATE), L"断开");
-        link_flag = 1;
-      }
-		
-			if(getSn_IR(SOCK_TCPS) & Sn_IR_CON)
-			{
-				setSn_IR(SOCK_TCPS, Sn_IR_CON);								          /*清除接收中断标志位*/
-			}
-			len=getSn_RX_RSR(SOCK_TCPS);									            /*定义len为已接收数据的长度*/
-			if(len>0)
-			{
-				recv(SOCK_TCPS, comdata, len);								              	/*接收来自Client的数据*/
-				comdata[len] = '\0'; 											                  /*添加字符串结束符*/
-//				printf("%s\r\n",comdata);
-        receive_win_set((char *)comdata, len);
-		  }
-		  break;
-		
-		case SOCK_CLOSE_WAIT:												                /*socket处于等待关闭状态*/
-			close(SOCK_TCPS);
-		  break;
-	}
-}
-
-/**
-*@brief		UDP测试程序
-*@param		无
-*@return	无
-*/
-void do_udp(HWND hwnd)
-{                                                              
-	uint16 len=0;
-	switch(getSn_SR(SOCK_UDPS))                                                /*获取socket的状态*/
-	{
-		case SOCK_CLOSED:                                                        /*socket处于关闭状态*/
-			socket(SOCK_UDPS,Sn_MR_UDP,local_port,0);                              /*初始化socket*/
-		  break;
-		
-		case SOCK_UDP:                                                           /*socket初始化完成*/
-//			delay_ms(10);
-      if (link_flag)
-      {
-        SetWindowText(GetDlgItem(hwnd, eID_BTN_STATE), L"断开");
-        link_flag = 1;
-      }
-      
-			if(getSn_IR(SOCK_UDPS) & Sn_IR_RECV)
-			{
-				setSn_IR(SOCK_UDPS, Sn_IR_RECV);                                     /*清接收中断*/
-			}
-			if((len=getSn_RX_RSR(SOCK_UDPS))>0)                                    /*接收到数据*/
-			{
-				recvfrom(SOCK_UDPS,comdata, len, remote_ip,&remote_port);               /*W5500接收计算机发送来的数据*/
-				comdata[len-8]=0x00;                                                    /*添加字符串结束符*/
-//				printf("%s\r\n",comdata);                                               /*打印接收缓存*/ 
-				sendto(SOCK_UDPS,comdata,len-8, remote_ip, remote_port);                /*W5500把接收到的数据发送给Remote*/
-				comdata[len-8]='\0';
-        receive_win_set((char *)comdata, len);
-			}
-			break;
-	}
-
-}
-/**
-*@brief		TCP Client回环演示函数。
-*@param		无
-*@return	无
-*/
-void do_tcp_client(HWND hwnd)
-{	
-   uint16 len=0;	
-
-	switch(getSn_SR(SOCK_TCPC))								  				         /*获取socket的状态*/
-	{
-		case SOCK_CLOSED:											        		         /*socket处于关闭状态*/
-			socket(SOCK_TCPC,Sn_MR_TCP,local_port++,Sn_MR_ND);
-		  break;
-		
-		case SOCK_INIT:													        	         /*socket处于初始化状态*/
-			connect(SOCK_TCPC,remote_ip,remote_port);                /*socket连接服务器*/ 
-		  break;
-		
-		case SOCK_ESTABLISHED: 												             /*socket处于连接建立状态*/
-      
-      if (link_flag)
-      {
-        SetWindowText(GetDlgItem(hwnd, eID_BTN_STATE), L"断开");
-        link_flag = 1;
-      }
-      
-			if(getSn_IR(SOCK_TCPC) & Sn_IR_CON)
-			{
-				setSn_IR(SOCK_TCPC, Sn_IR_CON); 							         /*清除接收中断标志位*/
-			}
-		
-			len=getSn_RX_RSR(SOCK_TCPC); 								  	         /*定义len为已接收数据的长度*/
-			if(len>0)
-			{
-				recv(SOCK_TCPC,comdata,len); 							   		         /*接收来自Server的数据*/
-				comdata[len]=0x00;  											                 /*添加字符串结束符*/
-//				printf("%s\r\n",comdata);
-        receive_win_set((char *)comdata, len);
-			}		  
-		  break;
-			
-		case SOCK_CLOSE_WAIT: 											    	         /*socket处于等待关闭状态*/
-			close(SOCK_TCPC);
-		  break;
-
-	}
-}
-
-void network_dispose_task(HWND hwnd) 
-{
-//  netmode=0;//默认是TCP Client
-//	IsConnect=0;//默认不启动连接
-//	IsNetInit=0;
-//	GUI_msleep(10); 
-//	gpio_for_w5500_config();	         	/*初始化MCU相关引脚*/
-//	reset_w5500();					            /*硬复位W5500*/
-//	set_w5500_mac();                    /*配置MAC地址*/
-//  IsNetInit=set_w5500_ip();           /*配置IP地址*/
-//	
-//  socket_buf_init(txsize, rxsize);    /*初始化8个Socket的发送接收缓存大小*/
   
+  if((drv_network.net_init==0)&&((bsp_result&1)==0))
+  {     
+    /* Initilaize the LwIP stack */
+    LwIP_Init(); 
+
+    drv_network.net_local_ip1  = (uint8_t)(gnetif.ip_addr.addr&0xFF);
+    drv_network.net_local_ip2  = (uint8_t)((gnetif.ip_addr.addr>>8)&0xFF);
+    drv_network.net_local_ip3  = (uint8_t)((gnetif.ip_addr.addr>>16)&0xFF);
+    drv_network.net_local_ip4  = (uint8_t)((gnetif.ip_addr.addr>>24)&0xFF);
+    drv_network.net_local_port = LOCAL_PORT;
+    
+    drv_network.net_remote_ip1  = DEST_IP_ADDR0;
+    drv_network.net_remote_ip2  = DEST_IP_ADDR1;
+    drv_network.net_remote_ip3  = DEST_IP_ADDR2;
+    drv_network.net_remote_ip4  = DEST_IP_ADDR3;
+    drv_network.net_remote_port = DEST_PORT;     
+    
+    drv_network.net_init=1;
+  }
+  
+//  PostCloseMessage(GetDlgItem(Network_Main_Handle, ID_Hint_Win));
+  if(bsp_result&1)
+  {		
+    char str[30];
+    if(network_start_flag==2)
+    {
+      /* Configure ethernet (GPIOs, clocks, MAC, DMA) */
+      if(ETH_BSP_Config()==1)
+      {
+        bsp_result |= 1;
+        sprintf(str," ");  
+      }
+      else
+      {
+        bsp_result &=~ 1;    
+        sprintf(str,"< must be restart Safari >"); 
+      }
+    }
+    else
+    {
+      sprintf(str," ");  
+    }
+    network_start_flag=2;
+  }
+  InvalidateRect(Network_Main_Handle, NULL, TRUE);
+  drv_network.net_connect=0;
+  drv_network.net_type=0; 
+  TIM3_Config(999,899);//10ms定时器 
+  LocalTime=0;
+  TIM_SetCounter(TIM3,0);
+  EthLinkStatus=0;
   while(1)
   {
-    if(IsConnect && (IsNetInit==0))
-		{
-			switch (netmode)
-			{
-				case 0:    //TCP Client
-						do_tcp_client(hwnd);
-					break;        
-				case 1:    //TCP Server
-						do_tcp_server(hwnd);
-					break;
-				case 2:    //UDP
-						do_udp(hwnd);
-					break;
-			}
-		}
-    GUI_msleep(10);
+    /* check if any packet received */
+    if (ETH_CheckFrameReceived())
+    { 
+      /* process received ethernet packet */
+      LwIP_Pkt_Handle();
+    }
+    /* handle periodic timers for LwIP */
+    LwIP_Periodic_Handle(LocalTime);
+
+    GUI_msleep(3);//WM_Exec();//
   }
 }
 
@@ -268,33 +176,34 @@ static void Ent_ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 {
   HDC hdc;
   RECT rc;
-//  HWND hwnd;
+  // HWND hwnd;
 
 	hdc = ds->hDC;   
 	rc = ds->rc; 
-//  hwnd = ds->hwnd;
+  // hwnd = ds->hwnd;
 
-//  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-//  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
+  // GetClientRect(hwnd, &rc_tmp);//得到控件的位置
+  // WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-//  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+  // BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_clock_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-		SetPenColor(hdc, MapRGB(hdc, 1, 191, 255));
+		SetPenColor(hdc, MapRGB(hdc, 120, 120, 120));      //设置文字色
 	}
 	else
 	{ //按钮是弹起状态
-
-		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));      //设置画笔色
+		SetPenColor(hdc, MapRGB(hdc, 250, 250, 250));
 	}
+  
+  rc.w = 25;
+  OffsetRect(&rc, 0, 3);
   
   for(int i=0; i<4; i++)
   {
     HLine(hdc, rc.x, rc.y, rc.w);
-    rc.y += 5;
+    rc.y += 6;
   }
-
 }
 
 // 重绘普通按钮
@@ -328,36 +237,7 @@ static void Ent_Button_OwnerDraw(DRAWITEM_HDR *ds)
   GetWindowText(hwnd, wbuf, 128);    // 得到原文本
 
   SetFont(hdc, defaultFont);
-  DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);     // 绘制文字(居中显示)
-}
-
-/*
- * @brief  重绘显示亮度的透明文本
- * @param  ds:	自定义绘制结构体
- * @retval NONE
-*/
-static void edit_textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
-{
-	HWND hwnd;
-	HDC hdc;
-	RECT rc;
-	WCHAR wbuf[128];
-
-	hwnd = ds->hwnd; //button的窗口句柄.
-	hdc = ds->hDC;   //button的绘图上下文句柄.
-  rc = ds->rc;
-  
-  SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
-  FillRect(hdc, &rc);
-
-  SetTextColor(hdc, MapRGB(hdc, 0, 0, 0));
-
-  GetWindowText(hwnd, wbuf, 128);    // 得到原文本
-
-  SetFont(hdc, defaultFont);
-  DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_CENTER);     // 绘制文字( 顶部对齐，左对齐，当字符超出矩形边界时,自动换行)
-  HLine(hdc, rc.x, rc.y + rc.h - 1, rc.w);
-
+  DrawText(hdc, wbuf, -1, &rc, DT_BOTTOM|DT_CENTER);     // 绘制文字(居中显示)
 }
 
 /*
@@ -393,38 +273,23 @@ static void Brigh_Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
     DrawText(hdc, L"发送区", -1, &rc, DT_VCENTER|DT_CENTER);  // 绘制文字
   }
   
-  OffsetRect(&rc, 2, 2);
+  OffsetRect(&rc, 5, 5);
   SetTextColor(hdc, MapRGB(hdc, 0, 0, 0));
-  WinTexeLen = GetWindowTextLength(hwnd) + 1;               // 获取文本长度
+  WinTexeLen = GetWindowTextLength(hwnd);               // 获取文本长度
 
   if (WinTexeLen > 0)
   {
-    wbuf = (WCHAR *)GUI_VMEM_Alloc(WinTexeLen*sizeof(WCHAR));         // 申请文本长度 + 新消息长度的内存
-    
-    if (wbuf != NULL)
-    {
-      GetWindowText(hwnd, wbuf, WinTexeLen+1);            // 得到原文本
+    wbuf = (WCHAR *)GUI_VMEM_Alloc(WinTexeLen*2);         // 申请文本长度 + 新消息长度的内存
+    GetWindowText(hwnd, wbuf, WinTexeLen+1);    // 得到原文本
 
-      SetFont(hdc, defaultFont);
-      DrawText(hdc, wbuf, -1, &rc, DT_TOP|DT_LEFT|DT_WORDBREAK);     // 绘制文字( 顶部对齐，左对齐，当字符超出矩形边界时,自动换行)
-      
-      GUI_VMEM_Free(wbuf);        // 释放申请的内存
-    }
+    SetFont(hdc, defaultFont);
+    DrawText(hdc, wbuf, -1, &rc, DT_TOP|DT_LEFT|DT_WORDBREAK);     // 绘制文字( 顶部对齐，左对齐，当字符超出矩形边界时,自动换行)
   }
 }
 
-/* 分组控件背景重绘回调 */
-BOOL group_erase(HDC hdc,const RECT *lprc,HWND hwnd)
-{
-  SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
-  FillRect(hdc, lprc);
-  
-  return TRUE;
-}
-
 extern void TCP_Echo_Init(void);
-extern int SelectDialogBox(HWND hwndParent, RECT rc,const WCHAR *pText,const WCHAR *pCaption,const MSGBOX_OPTIONS *ops);
-static WCHAR I[128];
+extern int SelectDialogBox(HWND hwndParent, RECT *rc,const WCHAR *pText,const WCHAR *pCaption,const MSGBOX_OPTIONS *ops);
+WCHAR I[128];
 
 static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -432,127 +297,96 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   {
     case WM_CREATE:
     {
-      RECT rc, rc0, m_rc[4];
-      WCHAR mode_text[][10] = {{L"TCPClient"}, {L"TCPServer"}, {L"UDP"}};
-      uint32_t mode_id[] = {ID_RB1, ID_RB2, ID_RB3};
+      RECT rc;
       GetClientRect(hwnd, &rc); 
-
-      netmode=0;//默认是TCP Client
-      IsConnect=0;//默认不启动连接
-      IsNetInit=0;
-      GUI_msleep(10); 
-      gpio_for_w5500_config();	         	/*初始化MCU相关引脚*/
-      reset_w5500();					            /*硬复位W5500*/
-      set_w5500_mac();                    /*配置MAC地址*/
-      IsNetInit=set_w5500_ip();           /*配置IP地址*/
-      
-      socket_buf_init(txsize, rxsize);    /*初始化8个Socket的发送接收缓存大小*/
-      
-      if (IsNetInit)
-      {
-        SetTimer(hwnd, 10, 20, TMR_START | TMR_SINGLE, NULL);
-      } 
-      
       HWND Temp_Handle;
       
-      xTaskCreate((TaskFunction_t )network_dispose_task,      /* 任务入口函数 */
-                  (const char*    )"wifi dispose task",    /* 任务名字 */
-                  (uint16_t       )3*1024/4,               /* 任务栈大小FreeRTOS的任务栈以字为单位 */
-                  (void*          )hwnd,                   /* 任务入口函数参数 */
-                  (UBaseType_t    )5,                      /* 任务的优先级 */
-                  (TaskHandle_t*  )&network_task_handle);     /* 任务控制块指针 */
+      xTaskCreate((TaskFunction_t )Network_Dispose_Task,      /* 任务入口函数 */
+                  (const char*    )"Network Dispose Task",    /* 任务名字 */
+                  (uint16_t       )3*1024/4,                  /* 任务栈大小FreeRTOS的任务栈以字为单位 */
+                  (void*          )NULL,                      /* 任务入口函数参数 */
+                  (UBaseType_t    )5,                         /* 任务的优先级 */
+                  (TaskHandle_t*  )&Network_Task_Handle);     /* 任务控制块指针 */
                       
       CreateWindow(BUTTON, L"O", WS_TRANSPARENT|BS_FLAT | BS_NOTIFY |WS_OWNERDRAW|WS_VISIBLE,
-                  286, 4, 23, 23, hwnd, eID_BTN_EXIT, NULL, NULL); 
-                  
-      CreateWindow(GROUPBOX, L"通讯协议", WS_VISIBLE, 157, 25, 164, 52, hwnd, ID_MODE_GROUP, NULL, NULL);
-      SetWindowErase(GetDlgItem(hwnd, ID_MODE_GROUP), group_erase);
-                  
-      GetClientRect(GetDlgItem(hwnd,ID_MODE_GROUP),&rc);
+                  444, 0, 36, 30, hwnd, eID_Network_EXIT, NULL, NULL); 
 
-      rc0.x =1;
-      rc0.y =16;
-      rc0.w =rc.w;
-      rc0.h =rc.h-17;
-      MakeMatrixRect(m_rc,&rc0,0,1,2,2);		
-      for(uint8_t i=0;i<3;i++)
-      {					
-        CreateWindow(BUTTON,mode_text[i],WS_VISIBLE|BS_RADIOBOX,m_rc[i].x,m_rc[i].y,m_rc[i].w,m_rc[i].h,GetDlgItem(hwnd,ID_MODE_GROUP), mode_id[i], NULL, NULL);    // 创建单选按钮
-
-        if(mode_id[i]==ID_RB1)
-        {
-          HWND wnd;
-          
-          wnd	= GetDlgItem(hwnd, ID_MODE_GROUP);
-          wnd	= GetDlgItem(wnd, ID_RB1&0xFFFF);
-          SendMessage(wnd, BM_SETSTATE, BST_CHECKED, 0);
-        }
-      }
-
-      rc.x = 262;
-      rc.y = 99;
-      rc.w = 54;
-      rc.h = 22;
+      /* 创建一组单选宽 */
+      rc.x = 232;
+      rc.y = 51;
+      rc.w = 100;
+      rc.h = 18;
+      CreateWindow(BUTTON,L"TCPServer",BS_RADIOBOX|WS_VISIBLE,
+      rc.x,rc.y,rc.w,rc.h,hwnd,ID_RB1,NULL,NULL);
+      SendMessage(GetDlgItem(hwnd, ID_RB1&0xFFFF), BM_SETSTATE, BST_CHECKED, 0);    // 默认选中
+      SendMessage(GetDlgItem(hwnd, ID_RB1&0xFFFF), TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_LEFT | DT_BKGND);
       
-      CreateWindow(BUTTON, L"连接", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
-                  rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_STATE, NULL, NULL);
+      OffsetRect(&rc, rc.w, 0);
+      CreateWindow(BUTTON,L"TCPClient",BS_RADIOBOX|WS_VISIBLE,
+      rc.x,rc.y,rc.w,rc.h,hwnd,ID_RB2,NULL,NULL);
+      SendMessage(GetDlgItem(hwnd, ID_RB2&0xFFFF), TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_LEFT | DT_BKGND);
+
+      OffsetRect(&rc, rc.w, 0);
+      rc.w = 52;
+      CreateWindow(BUTTON,L"UDP",BS_RADIOBOX|WS_VISIBLE,
+      rc.x,rc.y,rc.w,rc.h,hwnd,ID_RB3,NULL,NULL);
+      SendMessage(GetDlgItem(hwnd, ID_RB3&0xFFFF), TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_LEFT | DT_BKGND);
+      
+      CreateWindow(BUTTON, L"未连接", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
+                  426, 131, 53, 20, hwnd, eID_LINK_STATE, NULL, NULL);
       
       /* 数据发送文本窗口 */
-      rc.w = 161;
-      rc.h = 117;
-      rc.x = 157;
-      rc.y = 122;
-      CreateWindow(TEXTBOX, L"你好！这里是野火开发板 ^_^", WS_TRANSPARENT | WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Send, NULL, NULL);
+      rc.w = 245;
+      rc.h = 116;
+      rc.x = 232;
+      rc.y = 154;
+      Send_Handle = CreateWindow(TEXTBOX, L"你好！这里是野火开发板 ^_^", WS_TRANSPARENT | WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Send, NULL, NULL);
 
       /* 创建接收窗口 */
-      rc.w = 154;
-      rc.h = 194;
-      rc.x = 1;
-      rc.y = 26;
+      rc.w = 226;
+      rc.h = 214;
+      rc.x = 3;
+      rc.y = 31;
       Receive_Handle = CreateWindow(TEXTBOX, L"", WS_TRANSPARENT|WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_Receive, NULL, NULL);
       
-      rc.x = 281;
-      rc.y = 217;
-      rc.w = 35;
+      rc.x = 431;
+      rc.y = 247;
+      rc.w = 43;
       rc.h = 20;
       CreateWindow(BUTTON, L"发送", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
-                         rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_SEND, NULL, NULL); 
+                         rc.x,rc.y,rc.w,rc.h, hwnd, eID_Network_Send, NULL, NULL); 
                          
-      rc.x = 98;
+      rc.x = 156;
       rc.h = 20;
-      rc.w = 55;
-      rc.y = 217;
+      rc.w = 68;
+      rc.y = 247;
       CreateWindow(BUTTON, L"清空接收", WS_TRANSPARENT | BS_NOTIFY|WS_VISIBLE|WS_OWNERDRAW,
-                         rc.x,rc.y,rc.w,rc.h, hwnd, eID_BTN_CLEAR, NULL, NULL); 
+                         rc.x,rc.y,rc.w,rc.h, hwnd, eID_Receive_Clear,       NULL, NULL); 
 
-      /* IP&端口文本窗口 */
-      rc.w = 120;
-      rc.h = 22;
-      rc.x = 196;
-      rc.y = 76;
-      Temp_Handle = CreateWindow(TEXTBOX, L"192.168.000.3", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP, NULL, NULL);//
-      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
+      /* 数据发送文本窗口 */
+      rc.w = 32;
+      rc.h = 20;
+      rc.x = 232;
+      rc.y = 131;
+      Temp_Handle = CreateWindow(TEXTBOX, L"192", WS_VISIBLE|WS_BORDER, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP1, NULL, NULL);//
+      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_CENTER | DT_BKGND);
 
-//      OffsetRect(&rc, rc.w+3, 0);
-//      Temp_Handle = CreateWindow(TEXTBOX, L"168", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP2, NULL, NULL);//
-//      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
+      OffsetRect(&rc, rc.w+3, 0);
+      Temp_Handle = CreateWindow(TEXTBOX, L"168", WS_VISIBLE|WS_BORDER, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP2, NULL, NULL);//
+      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_CENTER | DT_BKGND);
 
-//      OffsetRect(&rc, rc.w+3, 0);
-//      Temp_Handle = CreateWindow(TEXTBOX, L"000", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP3, NULL, NULL);//
-//      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
+      OffsetRect(&rc, rc.w+3, 0);
+      Temp_Handle = CreateWindow(TEXTBOX, L"000", WS_VISIBLE|WS_BORDER, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP3, NULL, NULL);//
+      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_CENTER | DT_BKGND);
 
-//      OffsetRect(&rc, rc.w+3, 0);
-//      Temp_Handle = CreateWindow(TEXTBOX, L"138", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
-//      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
+      OffsetRect(&rc, rc.w+3, 0);
+      Temp_Handle = CreateWindow(TEXTBOX, L"138", WS_VISIBLE|WS_BORDER, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
+      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_CENTER | DT_BKGND);
 
-      rc.w = 55;
-      rc.h = 22;
-      rc.x = 196;
-      rc.y = 99;
-      Temp_Handle = CreateWindow(TEXTBOX, L"5000", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemotePort, NULL, NULL);//
-      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
-
-
+      OffsetRect(&rc, rc.w+3 , 0);
+      rc.w = 52;
+      Temp_Handle = CreateWindow(TEXTBOX, L"8080", WS_VISIBLE|WS_BORDER, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemotePort, NULL, NULL);//
+      SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_BOTTOM | DT_CENTER | DT_BKGND);
 
       break;
     } 
@@ -562,7 +396,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
       tmr_id = wParam;    // 定时器 ID
 
-      if (tmr_id == 10)    // 以连接错误
+      if (tmr_id == 10)    // 以太网初始化错误
       {
         RECT RC;
         MSGBOX_OPTIONS ops;
@@ -571,12 +405,12 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ops.Flag =MB_ICONERROR;
         ops.pButtonText =btn;
         ops.ButtonCount =2;
-        RC.w = 160;
-        RC.h = 120;
+        RC.w = 200;
+        RC.h = 100;
         RC.x = (GUI_XSIZE - RC.w) >> 1;
         RC.y = (GUI_YSIZE - RC.h) >> 1;
-        SelectDialogBox(hwnd, RC, L"以太网初始化失败\n请检查连接。", L"错误", &ops);    // 显示错误提示框
-        PostCloseMessage(hwnd);                                                  // 发送关闭窗口的消息
+        SelectDialogBox(hwnd, &RC, L"以太网初始化失败\n请重新检查连接。", L"错误", &ops);    // 显示错误提示框
+        PostCloseMessage(hwnd);                                                          // 发送关闭窗口的消息
       }
       
       break;
@@ -586,69 +420,90 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
       HDC hdc;
       PAINTSTRUCT ps;
+      WCHAR tempstr[30];
       
       RECT rc =  {0, 0, GUI_XSIZE, GUI_YSIZE};
       // hdc_pointer = CreateMemoryDC(SURF_SCREEN, PANEL_W, PANEL_H);
       hdc = BeginPaint(hwnd, &ps);
       
-      SetBrushColor(hdc, MapRGB(hdc, 255, 255, 255));
+      SetBrushColor(hdc, MapRGB(hdc, 250, 250, 250));
       FillRect(hdc, &rc);
 
-      rc.h = 25;
+      rc.h = 28;
       GradientFillRect(hdc, &rc, MapRGB(hdc, 1, 218, 254), MapRGB(hdc, 1, 168, 255), FALSE);
-      SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
+      SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
       DrawText(hdc, L"以太网", -1, &rc, DT_VCENTER|DT_CENTER);
 
       SetPenColor(hdc, MapRGB(hdc, 121, 121, 121));
 
-      rc.x = 1;
-      rc.y = 26;
-      rc.w = 154;
-      rc.h = 213;
+      rc.x = 3;
+      rc.y = 31;
+      rc.w = 226;
+      rc.h = 239;
       EnableAntiAlias(hdc, ENABLE);
-      DrawRoundRect(hdc, &rc, 5);     // 绘制接收区的外框
+      DrawRoundRect(hdc, &rc, 7);     // 绘制接收区的外框
       EnableAntiAlias(hdc, DISABLE);
       
       SetFont(hdc, defaultFont);
       SetTextColor(hdc, MapRGB(hdc, 0x16, 0x9B, 0xD5));
 
-      rc.x = 157;
-      rc.y = 74;
-      rc.w = 39;
-      rc.h = 24;
-      DrawText(hdc, L"IP:", -1, &rc, DT_RIGHT|DT_TOP);
+      rc.x = 232;
+      rc.y = 32;
+      rc.w = 91;
+      rc.h = 20;
+      DrawText(hdc, L"通讯协议：", -1, &rc, DT_LEFT|DT_TOP);
 
-      rc.y = 98;
-      DrawText(hdc, L"端口:", -1, &rc, DT_RIGHT|DT_TOP);
+      // rc.x = 550;
+      // rc.y = 36;
+      // rc.w = 60;
+      // rc.h = 30;
+      // DrawText(hdc, L"数据发送：", -1, &rc, DT_LEFT|DT_TOP);
+      
+      rc.w = 143;
+      rc.h = 20;
+      rc.x = 232;
+      rc.y = 71;
+      DrawText(hdc, L"本地IP地址&端口：", -1, &rc, DT_LEFT|DT_TOP);
+      
+      rc.y = 111;
+      DrawText(hdc, L"远端IP地址&端口：", -1, &rc, DT_LEFT|DT_TOP);
+      
+      SetTextColor(hdc, MapRGB(hdc, 10, 10, 10));
+      x_wsprintf(tempstr, L"[%d.%d.%d.%d:%d]",drv_network.net_local_ip1,drv_network.net_local_ip2,\
+                                       drv_network.net_local_ip3,drv_network.net_local_ip4,\
+                                       drv_network.net_local_port);
+      rc.w = 184;
+      rc.h = 20;
+      rc.x = 232;
+      rc.y = 91;
+      DrawText(hdc, tempstr, -1, &rc, DT_LEFT|DT_TOP);
+      
+      SetTextColor(hdc, MapRGB(hdc, 0x16, 0x9B, 0xD5));
+
+      // rc.w = 120;
+      // rc.h = 30;
+      // rc.x = 10;
+      // rc.y = 210;
+      // DrawText(hdc, L"数据接收：", -1, &rc, DT_LEFT|DT_TOP);
+
+      rc.w = 16;
+      rc.h = 20;
+      rc.x = 263;
+      rc.y = 136;
+      DrawText(hdc, L".", -1, &rc, DT_LEFT|DT_BOTTOM);
+      
+      rc.x = 297;
+      DrawText(hdc, L".", -1, &rc, DT_LEFT|DT_BOTTOM);
+      
+      rc.x = 331;
+      DrawText(hdc, L".", -1, &rc, DT_LEFT|DT_BOTTOM);
+      
+      rc.x = 364;
+      DrawText(hdc, L":", -1, &rc, DT_LEFT|DT_BOTTOM);
       
       EndPaint(hwnd, &ps);
       break;
     }
-    
-    //设置TEXTBOX的背景颜色以及文字颜色
-		case	WM_CTLCOLOR:
-		{
-			/* 控件在绘制前，会发送 WM_CTLCOLOR到父窗口.
-			 * wParam参数指明了发送该消息的控件ID;lParam参数指向一个CTLCOLOR的结构体指针.
-			 * 用户可以通过这个结构体改变控件的颜色值.用户修改颜色参数后，需返回TRUE，否则，系统
-			 * 将忽略本次操作，继续使用默认的颜色进行绘制.
-			 *
-			 */
-			u16 id;
-			id =LOWORD(wParam);
-      
-			if(id >= ID_MODE_GROUP)
-			{
-				CTLCOLOR *cr;
-				cr =(CTLCOLOR*)lParam;
-				cr->TextColor =RGB888(0, 0, 0);//文字颜色（RGB888颜色格式)
-				cr->BackColor =RGB888(255, 255, 255);//背景颜色（RGB888颜色格式)
-				cr->BorderColor =RGB888(10,10,10);//边框颜色（RGB888颜色格式)
-				return TRUE;				
-			}
-
-      return FALSE;
-		}
 
     case WM_DRAWITEM:
     {
@@ -656,7 +511,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
        ds = (DRAWITEM_HDR*)lParam;
        switch(ds->ID)
        {
-          case eID_BTN_EXIT:
+          case eID_Network_EXIT:
           {
             Ent_ExitButton_OwnerDraw(ds);
             return TRUE;             
@@ -669,21 +524,11 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return TRUE;   
           }
 
-          case eID_BTN_STATE:
-          case eID_BTN_SEND:
-          case eID_BTN_CLEAR:
+          case eID_LINK_STATE:
+          case eID_Network_Send:
+          case eID_Receive_Clear:
           {
             Ent_Button_OwnerDraw(ds);
-            return TRUE;   
-          }
-          
-          case ID_TEXTBOX_RemoteIP:
-//          case ID_TEXTBOX_RemoteIP2:
-//          case ID_TEXTBOX_RemoteIP3:
-//          case ID_TEXTBOX_RemoteIP4:
-          case ID_TEXTBOX_RemotePort:
-          {
-            edit_textbox_OwnerDraw(ds);
             return TRUE;   
           }
        }
@@ -691,178 +536,190 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
        break;
     }
 
+    //设置TEXTBOX的背景颜色以及文字颜色
+		case	WM_CTLCOLOR:
+		{
+			/* 控件在绘制前，会发送 WM_CTLCOLOR到父窗口.
+			 * wParam参数指明了发送该消息的控件ID;lParam参数指向一个CTLCOLOR的结构体指针.
+			 * 用户可以通过这个结构体改变控件的颜色值.用户修改颜色参数后，需返回TRUE，否则，系统
+			 * 将忽略本次操作，继续使用默认的颜色进行绘制.
+			 *
+			 */
+			u16 id;
+			id =LOWORD(wParam);
+      
+			if(id >= ID_TEXTBOX_RemoteIP1 && id <= ID_TEXTBOX_RemotePort)
+			{
+				CTLCOLOR *cr;
+				cr =(CTLCOLOR*)lParam;
+				cr->TextColor =RGB888(0, 0, 0);//文字颜色（RGB888颜色格式)
+				cr->BackColor =RGB888(250, 250, 250);//背景颜色（RGB888颜色格式)
+				cr->BorderColor =RGB888(10,10,10);//边框颜色（RGB888颜色格式)
+				return TRUE;				
+			}
+
+      return FALSE;
+		}
+
     case WM_NOTIFY:
     {
       u16 code, id;
       id  =LOWORD(wParam);//获取消息的ID码
       code=HIWORD(wParam);//获取消息的类型    
-      if(code == BN_CLICKED && id == eID_BTN_EXIT)    // 退出按钮按下
+      if(code == BN_CLICKED && id == eID_Network_EXIT)    // 退出按钮按下
       {
         PostCloseMessage(hwnd);    // 发送关闭窗口的消息
         break;
       }
-      if(code == BN_CLICKED && id == eID_BTN_CLEAR)    // 清空接收的窗口的按钮被按下
+      if(code == BN_CLICKED && id == eID_Receive_Clear)    // 清空接收的窗口的按钮被按下
       {
         SetWindowText(Receive_Handle, L"");
         break;
       }
       
-      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP)    // IP1 编辑框被按下
+      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP1)    // IP1 编辑框被按下
       {
-        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP", I, 16, hwnd);
-        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), I);
-        
-        char buf[128];
-
-        switch (netmode)
-        {
-          case 1:     
-            x_wcstombs(buf, I, 128);                                       // 将宽字符串转为单字符串
-            TextToIP((uint8_t *)buf, local_ip);            
-            break;
-          
-          case 0:
-          case 2:
-            x_wcstombs(buf, I, 128);                                       // 将宽字符串转为单字符串
-            TextToIP((uint8_t *)buf, remote_ip);
-            break;
-        }
-        
-        
+        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP1", I, 3, hwnd);
+        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP1), I);
         break;
       }
       
-//      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP2){    // IP2 编辑框被按下
-//        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP2", I, 3, hwnd);
-//        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP2), I);
-//        break;
-//      }
-//      
-//      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP3){    // IP3 编辑框被按下
-//        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP3", I, 3, hwnd);
-//        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP3), I);
-//        break;
-//      }
-//      
-//      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP4){    // IP4 编辑框被按下
-//        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP4", I, 3, hwnd);
-//        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP4), I);
-//        break;
-//      }
+      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP2){    // IP2 编辑框被按下
+        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP2", I, 3, hwnd);
+        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP2), I);
+        break;
+      }
+      
+      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP3){    // IP3 编辑框被按下
+        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP3", I, 3, hwnd);
+        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP3), I);
+        break;
+      }
+      
+      if(code == TBN_CLICKED && id == ID_TEXTBOX_RemoteIP4){    // IP4 编辑框被按下
+        number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"IP4", I, 3, hwnd);
+        SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP4), I);
+        break;
+      }
       
       if(code == TBN_CLICKED && id == ID_TEXTBOX_RemotePort)    // 端口 编辑框被按下
       {
         number_input_box(0, 0, GUI_XSIZE, GUI_YSIZE, L"PORT", I, 5, hwnd);
         SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), I);
-        
-        char buf[128];
-        switch (netmode)
-        {
-          case 1:     
-            x_wcstombs(buf, I, 128);                                       // 将宽字符串转为单字符串
-            local_port = x_atoi(buf);
-            break;
-          
-          case 0:
-          case 2:
-            x_wcstombs(buf, I, 128);                                       // 将宽字符串转为单字符串
-            remote_port = x_atoi(buf);
-            break;
-        }
-        
         break;
       }
       
-      if(code == BN_CLICKED && id == eID_BTN_STATE)
+      if(code == BN_CLICKED && id == eID_LINK_STATE)
       {
-        if(IsConnect==0)
-				{
-					IsConnect = 1;//启动连接
-          link_flag = 1;
-          SetWindowText(GetDlgItem(hwnd, eID_BTN_STATE), L"连接中..");
-
-//          EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), DISABLE);
-//          EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), DISABLE);
-//          EnableWindow(GetDlgItem(hwnd, ID_MODE_GROUP), DISABLE);
-				}
-				else
-				{
-          link_flag = 0;
-          SetWindowText(GetDlgItem(hwnd, eID_BTN_STATE), L"连接");
-//          if(netmode!=1)
-//          {
-//            EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), ENABLE);
-//          }
-//          EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), ENABLE);
-//          EnableWindow(GetDlgItem(hwnd, ID_MODE_GROUP), ENABLE);
-//					remote_port=5000;//调整远端端口为默认值
-//					local_port=6000;//调整本地端口为默认值
-					IsConnect=0;//关闭连接
-				}
-      }
-      
-      if(code == BN_CLICKED && id == eID_BTN_SEND)
-      {
-        WCHAR wbuf[128];
-
-        /* 获取发送窗口的字符串 */
-        GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_Send), wbuf, 128);
-        x_wcstombs((char *)comdata, wbuf, 128);
-        
-        switch(netmode)
-        {
-          case 0:
-            send(SOCK_TCPC,comdata,strlen((const char *)comdata));								     	         /*向Server发送数据*/
-            break;
-          case 1:
-            send(SOCK_TCPS,comdata,strlen((const char *)comdata));
-           break;
-          case 2:
-            sendto(SOCK_UDPS,comdata,strlen((const char *)comdata), remote_ip, remote_port);    
-           break;
-        }
-      }
-      
-      /* 单选按钮被按下 */
-      if( (id >= (ID_RB1 & ~(1<<16))) && (id <= (ID_RB3 & ~(1<<16))))
-      {
-        if (code == BN_CLICKED)
-        {
-          netmode = id & 3;
-          WCHAR iptext[20];
-          WCHAR portetxt[10];
-          
-          switch (netmode)
+        if((bsp_result&1)||EthLinkStatus)
           {
-            case 1:
-              EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), DISABLE);
-              EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), DISABLE);
-              x_wsprintf(iptext, L"%d.%d.%d.%d",local_ip[0],local_ip[1],local_ip[2],local_ip[3]);
-              SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), iptext);
-              x_wsprintf(portetxt, L"%d", local_port);
-              SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), portetxt);             
-              break;
-            
-            case 0:
-            case 2:
-              EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), ENABLE);
-              EnableWindow(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), ENABLE);
-              x_wsprintf(iptext, L"%d.%d.%d.%d",remote_ip[0],remote_ip[1],remote_ip[2],remote_ip[3]);
-              SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP), iptext);
-              x_wsprintf(portetxt, L"%d", local_port);
-              SetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), portetxt);   
-              break;
+            break;
+          }
+          if(drv_network.net_connect==0)
+          {
+            uint8_t connectflag;
+            WCHAR wbuf[128];
+            char buf[128];
+
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP1), wbuf, 128);    // 获取文本框的文本
+            x_wcstombs_cp936(buf, wbuf, 128);                                    // 将宽字符串转为单字符串
+            drv_network.net_remote_ip1 = x_atoi(buf);                            // 字符串转整型
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP2), wbuf, 128);
+            x_wcstombs_cp936(buf, wbuf, 128);
+            drv_network.net_remote_ip2 = x_atoi(buf);
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP3), wbuf, 128);
+            x_wcstombs_cp936(buf, wbuf, 128);
+            drv_network.net_remote_ip3 = x_atoi(buf);
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemoteIP4), wbuf, 128);
+            x_wcstombs_cp936(buf, wbuf, 128);
+            drv_network.net_remote_ip4 = x_atoi(buf);
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_RemotePort), wbuf, 128);
+            x_wcstombs_cp936(buf, wbuf, 128);
+            drv_network.net_remote_port = x_atoi(buf);
+            drv_network.net_type=NetworkTypeSelection;
+            switch(drv_network.net_type)
+            {
+              case 0:
+                /*create tcp server */ 
+                connectflag=tcp_echoserver_init(drv_network);
+                break;
+              case 1:
+                /*connect to tcp server */
+                connectflag=tcp_echoclient_connect(drv_network);
+                break;
+              case 2:
+                /* Connect to tcp server */ 
+                connectflag=udp_echoclient_connect(drv_network);		
+                break;            
+            }
+            if(connectflag==0)    // 连接成功
+            {
+              drv_network.net_connect=1; 
+              SetWindowText(GetDlgItem(hwnd, eID_LINK_STATE), L"已连接");
+            }      
+          }
+          else
+          {
+            /* 断开连接 */
+            SetWindowText(GetDlgItem(hwnd, eID_LINK_STATE), L"未连接");
+            switch(drv_network.net_type)
+            {
+              case 0:
+                tcp_echoserver_close();
+                break;
+              case 1:
+                tcp_echoclient_disconnect();
+                break;
+              case 2:
+                udp_echoclient_disconnect();	
+                break;            
+            }
+            drv_network.net_connect=0;
           }
         }
-      }
+        if(code == BN_CLICKED && id == eID_Network_Send)
+        {
+          if(drv_network.net_connect==1)          
+          {
+            WCHAR wbuf[128];
+            char comdata[128];
+
+            /* 获取发送窗口的字符串 */
+            GetWindowText(GetDlgItem(hwnd, ID_TEXTBOX_Send), wbuf, 128);
+            x_wcstombs_cp936(comdata, wbuf, 128);
+
+            /* 发送消息 */
+            switch(drv_network.net_type)
+            {
+              case 0:
+                network_tcpserver_send((char *)comdata);
+                break;
+              case 1:
+                network_tcpclient_send((char *)comdata);
+                break;
+              case 2:
+                udp_echoclient_send((char *)comdata);
+                break;            
+            }
+          }
+        }
+      
+        /* 单选按钮被按下 */
+        if( (id >= (ID_RB1 & ~(1<<16))) && (id <= (ID_RB3 & ~(1<<16))))
+        {
+          if (code == BN_CLICKED)
+          {
+            NetworkTypeSelection = id & 3;
+          }
+        }
 
       break;
     } 
 
     case WM_DESTROY:
     { 
-      IsConnect=0;//关闭连接
-      vTaskDelete(network_task_handle);
+      GUI_Thread_Delete(Network_Task_Handle);    // 删除网络处理任务
+      NetworkTypeSelection = 0;                  // 复位默认的选项
 
       return PostQuitMessage(hwnd);	
     } 
@@ -875,12 +732,11 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
   
 }
 
-void gui_network_dialog(void)
+void GUI_NetworkDLG_Dialog(void)
 {
 	
 	WNDCLASS	wcex;
 	MSG msg;
-  HWND hwnd;
 	wcex.Tag = WNDCLASS_TAG;
 
 	wcex.Style = CS_HREDRAW | CS_VREDRAW;
@@ -892,18 +748,18 @@ void gui_network_dialog(void)
 	wcex.hCursor = NULL;//LoadCursor(NULL, IDC_ARROW);
    
 	//创建主窗口
-	hwnd = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
+	Network_Main_Handle = CreateWindowEx(WS_EX_NOFOCUS|WS_EX_FRAMEBUFFER,
                               &wcex,
-                              L"gui network dialog",
+                              L"GUI_ADC_CollectVoltage_Dialog",
                               WS_VISIBLE|WS_CLIPCHILDREN,
                               0, 0, GUI_XSIZE, GUI_YSIZE,
                               NULL, NULL, NULL, NULL);
 
    //显示主窗口
-	ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(Network_Main_Handle, SW_SHOW);
 
 	//开始窗口消息循环(窗口关闭并销毁时,GetMessage将返回FALSE,退出本消息循环)。
-	while (GetMessage(&msg, hwnd))
+	while (GetMessage(&msg, Network_Main_Handle))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);

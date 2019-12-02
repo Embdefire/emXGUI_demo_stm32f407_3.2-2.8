@@ -44,7 +44,7 @@ typedef enum{
 
 
 /******************************* ESP8266 外部全局变量声明 ***************************/
-#define RX_BUF_MAX_LEN     1024                                     //最大接收缓存字节数
+#define RX_BUF_MAX_LEN     256                                     //最大接收缓存字节数
 
 extern struct  STRUCT_USARTx_Fram                                  //串口数据帧的处理结构体
 {

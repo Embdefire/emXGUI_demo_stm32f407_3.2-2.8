@@ -285,8 +285,7 @@
 /**
  * Perform Sanity check of user-configurable values, and initialize all modules.
  */
-void
-lwip_init(void)
+void lwip_init(void)
 {
   /* Modules initialization */
   stats_init();

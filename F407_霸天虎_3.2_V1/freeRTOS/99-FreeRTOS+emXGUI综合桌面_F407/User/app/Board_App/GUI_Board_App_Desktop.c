@@ -70,7 +70,7 @@ extern void GUI_SMS_Dialog(void);
 extern void GUI_CLOCK_DIALOG(void);
 extern void GUI_RECORDER_DIALOG(void);
 extern void gui_wifi_dialog(void);
-extern void gui_network_dialog(void);
+extern void GUI_NetworkDLG_Dialog(void);
 extern void GUI_SimulateUDisk_Dialog(void);
 extern void GUI_LED_KEY_Dialog(void);
 
@@ -146,7 +146,7 @@ static const struct __obj_list menu_list_1[] = {
       L"摄像头",		  NULL,	  L"M", RGB_WHITE, GUI_Camera_DIALOG,//dummy,//
 
       L"WiFi",		    NULL,	  L"P", RGB_WHITE, gui_wifi_dialog,
-//      L"以太网",		  NULL,	  L"Q", RGB_WHITE, gui_network_dialog,
+//      L"以太网",		  NULL,	  L"Q", RGB_WHITE, GUI_NetworkDLG_Dialog,
       L"模拟U盘",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE, GUI_LED_KEY_Dialog,
 
@@ -154,7 +154,7 @@ static const struct __obj_list menu_list_1[] = {
       L"电话",	      NULL, 	L"T", RGB_WHITE, GUI_Phone_Dialog,
       L"短信",	      NULL,   L"U", RGB_WHITE, GUI_SMS_Dialog,
       L"设置",	     NULL,	  L"h", RGB_WHITE, GUI_Settings_DIALOG,
-//  
+  
       L"电压表",		  NULL,	  L"W", RGB_WHITE, GUI_ADC_CollectVoltage_Dialog,  
       L"温湿度",	    NULL,   L"O", RGB_WHITE, GUI_T_RH_Dialog,
       L"录音机",	    NULL,	  L"Y", RGB_WHITE, GUI_RECORDER_DIALOG,
