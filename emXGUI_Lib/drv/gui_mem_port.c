@@ -123,7 +123,7 @@ void	GUI_MEM_Init(void)
 void*	GUI_MEM_Alloc(U32 size)
 {
 	void *p=NULL;
-//  printf("剩余：%d字节\n需要：%d字节\n", xPortGetFreeHeapSize(), size);
+  printf("剩余：%d字节\n需要：%d字节\n", xPortGetFreeHeapSize(), size);
 	p =OS_MALLOC(size);
 	if(p==NULL)
 	{

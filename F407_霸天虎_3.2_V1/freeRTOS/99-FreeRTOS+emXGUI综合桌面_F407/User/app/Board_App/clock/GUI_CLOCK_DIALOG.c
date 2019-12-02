@@ -375,14 +375,11 @@ static void Dial_OwnerDraw(DRAWITEM_HDR *ds)  // »æÖÆ±íÅÌ
 
   (void)RTC->DR;
   
-
-
-  {
     clock_back = hdc_clock_back_02;
     clock_h = bm_clock_h_02;
     clock_m = bm_clock_m_02;
     clock_s = bm_clock_s_02;
-  }
+
 
   BitBlt(hdc, 0, 0, 120, 126, hdc_clock_png[clock_back], 0, 0, SRCCOPY);
   EnableAntiAlias(hdc, TRUE);

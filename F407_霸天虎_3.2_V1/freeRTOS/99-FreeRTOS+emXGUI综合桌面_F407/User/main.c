@@ -108,16 +108,16 @@ static void BSP_Init(void)
 		while (1);	/* 停机 */
 	}
 		
-//			 /* 初始化 RTC */
-//		rtc_time.RTC_Time.RTC_H12=RTC_H12_AM;
-//		rtc_time.RTC_Time.RTC_Hours   =11;
-//		rtc_time.RTC_Time.RTC_Minutes =55;
-//		rtc_time.RTC_Time.RTC_Seconds =30;
-//		rtc_time.RTC_Date.RTC_WeekDay =05;
-//		rtc_time.RTC_Date.RTC_Date    =16;
-//		rtc_time.RTC_Date.RTC_Month   =10;
-//		rtc_time.RTC_Date.RTC_Year    =15;
-//		RTC_CheckAndConfig(&rtc_time,0);
+  /* 初始化 RTC */
+  rtc_time.RTC_Time.RTC_H12=RTC_H12_AM;
+  rtc_time.RTC_Time.RTC_Hours   =11;
+  rtc_time.RTC_Time.RTC_Minutes =55;
+  rtc_time.RTC_Time.RTC_Seconds =30;
+  rtc_time.RTC_Date.RTC_WeekDay =05;
+  rtc_time.RTC_Date.RTC_Date    =16;
+  rtc_time.RTC_Date.RTC_Month   =10;
+  rtc_time.RTC_Date.RTC_Year    =15;
+  RTC_CheckAndConfig(&rtc_time,0);
 
 }
 

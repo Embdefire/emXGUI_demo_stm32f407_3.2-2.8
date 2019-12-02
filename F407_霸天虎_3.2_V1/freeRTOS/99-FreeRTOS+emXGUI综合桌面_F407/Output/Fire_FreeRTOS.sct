@@ -13,7 +13,7 @@ LR_IROM1 0x08000000 0x00100000  {    ; load region size_region
   .ANY (+RW +ZI)      ;其余的RW/ZI-data都分配到这里
   }
    
-  RW_ERAM1 0x6C0E1000 0x000001f000 {  ; 外部SDRAM
+  RW_ERAM1 0x6C0FA000 0x0000006000 {  ; 外部SDRAM
 ;  *.o(HEAP)            ;选择堆区
   .ANY (EXRAM)       ;选择EXRAM节区
   }
