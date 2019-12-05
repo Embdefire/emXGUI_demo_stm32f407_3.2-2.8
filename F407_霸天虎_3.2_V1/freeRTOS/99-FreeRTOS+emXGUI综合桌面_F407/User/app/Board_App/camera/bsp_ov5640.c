@@ -19,15 +19,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 //#include "./systick/bsp_SysTick.h"
+#include <emXGUI.h>
 #include "./camera/bsp_ov5640.h"
 #include "qr_decoder_user.h"
 
-//摄像头图像缓冲区
-__attribute__ ((at(0xD1A00000))) uint16_t cam_buff00[800*480];
-__attribute__ ((at(0xD1B00000))) uint16_t cam_buff01[800*480];
 
 #define Delay(ms)  GUI_msleep(ms)
-//extern uint16_t *cam_buff0;
+extern uint16_t *cam_buff;
 //extern uint16_t *cam_buff1;
 /** @addtogroup STM32F4xx_StdPeriph_Examples
   * @{
@@ -87,37 +85,37 @@ OV5640_MODE_PARAM cam_mode =
 //	.auto_focus = 1,
 	
 /**********配置2*****240*320****竖屏显示****************************/	
-	.frame_rate = FRAME_RATE_30FPS,	
-	
-	//ISP窗口
-	.cam_isp_sx = 0,
-	.cam_isp_sy = 0,	
-	
-	.cam_isp_width = 1920,
-	.cam_isp_height = 1080,
-	
-	//输出窗口
-	.scaling = 1,      //使能自动缩放
-	.cam_out_sx = 16,	//使能自动缩放后，一般配置成16即可
-	.cam_out_sy = 4,	  //使能自动缩放后，一般配置成4即可
-	.cam_out_width = 240,
-	.cam_out_height = 320,
-	
-	//LCD位置
-	.lcd_sx = 120,
-	.lcd_sy = 267,
-	.lcd_scan = 6, //LCD扫描模式，
-	
-	//以下可根据自己的需要调整，参数范围见结构体类型定义	
-	.light_mode = 0,//自动光照模式
-	.saturation = 0,	
-	.brightness = 0,
-	.contrast = 0,
-	.effect = 0,		//正常模式
-	.exposure = 0,		
+//	.frame_rate = FRAME_RATE_30FPS,	
+//	
+//	//ISP窗口
+//	.cam_isp_sx = 0,
+//	.cam_isp_sy = 0,	
+//	
+//	.cam_isp_width = 400,
+//	.cam_isp_height = 300,
+//	
+//	//输出窗口
+//	.scaling = 1,      //使能自动缩放
+//	.cam_out_sx = 16,	//使能自动缩放后，一般配置成16即可
+//	.cam_out_sy = 4,	  //使能自动缩放后，一般配置成4即可
+//	.cam_out_width = 320,
+//	.cam_out_height = 240,
+//	
+//	//LCD位置
+//	.lcd_sx = 0,
+//	.lcd_sy = 0,
+//	.lcd_scan = 6, //LCD扫描模式，
+//	
+//	//以下可根据自己的需要调整，参数范围见结构体类型定义	
+//	.light_mode = 0,//自动光照模式
+//	.saturation = 0,	
+//	.brightness = 0,
+//	.contrast = 0,
+//	.effect = 0,		//正常模式
+//	.exposure = 0,		
 
-	.auto_focus = 1,//自动对焦
-	
+//	.auto_focus = 1,//自动对焦
+//	
 	/*******配置3********640*480****小分辨率****************************/	
 //  .frame_rate = FRAME_RATE_30FPS,	
 //	
@@ -181,6 +179,39 @@ OV5640_MODE_PARAM cam_mode =
 //	.exposure = 0,		
 
 //	.auto_focus = 1,
+
+	/******3.2寸屏幕特殊配置****************************/	
+	.frame_rate = FRAME_RATE_15FPS,	
+	
+	//ISP窗口
+	.cam_isp_sx = 0,
+	.cam_isp_sy = 0,	
+	
+	.cam_isp_width = 1920,
+	.cam_isp_height = 1080,
+	
+	//输出窗口
+	.scaling = 1,      //使能自动缩放
+	.cam_out_sx = 16,	//使能自动缩放后，一般配置成16即可
+	.cam_out_sy = 4,	  //使能自动缩放后，一般配置成4即可
+	.cam_out_width = 320+16,//图像显示窗口左移16像素
+	.cam_out_height = 306,//由于未知原因。将分辨率高度设置为240无法正常刷新，经测试，设定为306即可
+	
+	//LCD位置
+	.lcd_sx = 0,
+	.lcd_sy = 0,
+	.lcd_scan = 5, //LCD扫描模式，本横屏配置可用1、3、5、7模式
+	
+	//以下可根据自己的需要调整，参数范围见结构体类型定义	
+	.light_mode = 0x04,//自动光照模式
+	.saturation = 0,	
+	.brightness = 0,
+	.contrast = 0,
+	.effect = 0x00,		//正常模式
+	.exposure = 0,		
+
+	.auto_focus = 1,
+
 
 };
 
@@ -709,7 +740,7 @@ RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
 	//开始传输，从后面开始一行行扫描上来，实现数据翻转
 	//dma_memory 以16位数据为单位， dma_bufsize以32位数据为单位(即像素个数/2)
   //OV5640_DMA_Config(); 	
-  HAL_DCMI_Start_DMA((uint32_t )cam_buff00,cam_mode.cam_out_width*cam_mode.cam_out_height/2);
+  HAL_DCMI_Start_DMA((uint32_t )cam_buff,cam_mode.cam_out_width*cam_mode.cam_out_height/2);
 	/* 配置中断 */
 //  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
   
@@ -1883,6 +1914,15 @@ static void DMA_ChangeMemory(uint32_t Address, HAL_DMA_MemoryTypeDef memory)
   }
 
 }
+
+void OV5640_Capture_Control(FunctionalState state)
+{
+		DMA_Cmd(DMA2_Stream1, state);//DMA2,Stream1
+  	DCMI_Cmd(state); 						//DCMI采集数据
+		DCMI_CaptureCmd(state);//DCMI捕获
+}
+
+
 extern uint8_t fps;
 
 void DCMI_Start(void)
@@ -1903,10 +1943,10 @@ void DCMI_Stop(void)
 //    DCMI_CaptureCmd(DISABLE);	
 		
 }
+
+uint8_t Ov5640_vsync = 0;	
 __IO int updata = 0;
-//rt_tick_t s = 0;
 extern HWND Cam_hwnd;//主窗口句柄
-//extern uint8_t QR_Task;
 void DCMI_IRQHandler(void)
 {
   uint32_t ulReturn;
@@ -1917,40 +1957,8 @@ void DCMI_IRQHandler(void)
 		DCMI_ClearITPendingBit(DCMI_IT_FRAME);
     DCMI_Stop();
 
-//    if(cur_index == 0)//0--配置第二块内存，使用第一块内存
-//    {
-//      cur_index = 1;
-//      if (QR_Task)
-//      {
-//        cur_index = 0;
-//        GUI_SemPostISR(cam_sem);
-//        OV5640_Capture_Control(DISABLE);//关闭摄像头采集图像
-////        DMA_ITConfig(DMA2_Stream1,DMA_IT_TC,DISABLE); //关闭DMA中断
-//        DCMI_Cmd(DISABLE); //DCMI失能
-//        DCMI_CaptureCmd(DISABLE); 
+	  GUI_SemPostISR(cam_sem);
 
-//        get_image((uint32_t)cam_buff00,cam_mode.cam_out_width, cam_mode.cam_out_height);
-//      }
-//      else
-//      {
-//        //LCD_Init((uint32_t)cam_buff00, 0, LTDC_Pixelformat_RGB565);
-////        LCD_LayerCamInit((uint32_t)cam_buff00,cam_mode.cam_out_width, cam_mode.cam_out_height);
-//        HAL_DCMI_Start_DMA((uint32_t)cam_buff01,
-//                        cam_mode.cam_out_height*cam_mode.cam_out_width/2);
-//        DCMI_Start();	
-//      }
-//    }
-//    else
-			if (cur_index == 1)//1--配置第一块内存，使用第二块内存
-    {
-      cur_index = 0;
-      //LCD_Init((uint32_t)cam_buff01, 0, LTDC_Pixelformat_RGB565);
-//      LCD_LayerCamInit((uint32_t)cam_buff01,cam_mode.cam_out_width, cam_mode.cam_out_height);
-
-      HAL_DCMI_Start_DMA((uint32_t)cam_buff00,
-                        cam_mode.cam_out_height*cam_mode.cam_out_width/2);  
-      DCMI_Start();	      
-    }	
 	}
   /* 退出临界段 */
   taskEXIT_CRITICAL_FROM_ISR( ulReturn );
@@ -2097,25 +2105,25 @@ void DMA2_Stream1_IRQHandler(void)
 //  rt_exit_critical();
 }
 
-void OV5640_Capture_Control(FunctionalState state)
-{
-  switch(state)
-  {
-    case ENABLE:
-    {
-//      HAL_DCMI_Stop(&DCMI_Handle);
-//      HAL_DMA_Abort(&DMA_Handle_dcmi);      
-      break;
-    }
-    case DISABLE:
-    {
-      DCMI_CaptureCmd(DISABLE);
-      DMA_Cmd(DMA2_Stream1,DISABLE);
-      while(DMA_GetCmdStatus(DMA2_Stream1) != DISABLE){}
+//void OV5640_Capture_Control(FunctionalState state)
+//{
+//  switch(state)
+//  {
+//    case ENABLE:
+//    {
+////      HAL_DCMI_Stop(&DCMI_Handle);
+////      HAL_DMA_Abort(&DMA_Handle_dcmi);      
+//      break;
+//    }
+//    case DISABLE:
+//    {
+//      DCMI_CaptureCmd(DISABLE);
+//      DMA_Cmd(DMA2_Stream1,DISABLE);
+//      while(DMA_GetCmdStatus(DMA2_Stream1) != DISABLE){}
 
-      
-      break;
-    }
-  }
-}
+//      
+//      break;
+//    }
+//  }
+//}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

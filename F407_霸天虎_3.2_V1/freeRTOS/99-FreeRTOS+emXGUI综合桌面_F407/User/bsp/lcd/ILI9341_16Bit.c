@@ -399,6 +399,24 @@ void LCD_BackLed_Control(int on)
 	}
 }
 
+
+
+
+void ILI9341_OpenWindow ( uint16_t usX, uint16_t usY, uint16_t usWidth, uint16_t usHeight )
+{	
+	ILI9341_Write_Cmd ( 0x2A ); 				 /* 设置X坐标 */
+	ILI9341_Write_Data ( usX >> 8  );	 /* 先高8位，然后低8位 */
+	ILI9341_Write_Data ( usX & 0xff  );	 /* 设置起始点和结束点*/
+	ILI9341_Write_Data ( ( usX + usWidth - 1 ) >> 8  );
+	ILI9341_Write_Data ( ( usX + usWidth - 1 ) & 0xff  );
+
+	ILI9341_Write_Cmd ( 0x2B ); 			     /* 设置Y坐标*/
+	ILI9341_Write_Data ( usY >> 8  );
+	ILI9341_Write_Data ( usY & 0xff  );
+	ILI9341_Write_Data ( ( usY + usHeight - 1 ) >> 8 );
+	ILI9341_Write_Data ( ( usY + usHeight - 1) & 0xff );
+	
+}
 /*=========================================================================================*/
 
 #if 0

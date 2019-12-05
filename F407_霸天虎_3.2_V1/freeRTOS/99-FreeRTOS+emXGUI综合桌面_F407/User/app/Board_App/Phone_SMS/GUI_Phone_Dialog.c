@@ -431,7 +431,8 @@ static LRESULT	DialWinProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 }
 
-extern int SelectDialogBox(HWND hwndParent, RECT rc,const WCHAR *pText,const WCHAR *pCaption,const MSGBOX_OPTIONS *ops);
+
+
 
 static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
