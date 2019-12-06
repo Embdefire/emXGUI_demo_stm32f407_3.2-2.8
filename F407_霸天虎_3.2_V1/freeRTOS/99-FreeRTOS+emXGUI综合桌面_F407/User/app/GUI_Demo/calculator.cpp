@@ -127,8 +127,6 @@ static const U8  fd[4]={0,1,2,3};
 static const U16 ff=0x3246;
 
 
-//static char output[MAXLEN] __EXRAM;
-//static char input[MAXLEN] __EXRAM;
 static char *output;
 static char *input;
 
@@ -283,13 +281,12 @@ static double ave(int n,double *m);
 static double variance(int n,double *m);
 	
 static int identnum;
-//static iden ident[MAXIDENT] __EXRAM;
+
 static iden *ident;
-//static char hisexp[MAXLEN][MAXLEN] __EXRAM;
+
 static char (*hisexp)[MAXLEN];
 static BOOL jiao;
 static int funnum;
-//static char hisfun[20] __EXRAM;
 static char *hisfun;
 static BOOL funflag;
 static BOOL opflag;
@@ -297,7 +294,6 @@ static int opnum;
 static double hisdata;
 static char hisop;
 static BOOL errorflag;
-//static char stack[MAXLEN][MAXLEN] __EXRAM;
 static char (*stack)[MAXLEN];
 static int low;
 static int now;
@@ -1093,8 +1089,6 @@ static void OnEql(char *result,char *input)
 
 /*============================================================================*/
 
-//static	WCHAR wstr_buf[1024] __EXRAM;
-//static	char	str_buf[1024] __EXRAM;
 static	WCHAR *wstr_buf;
 static	char	*str_buf;
 

@@ -63,7 +63,7 @@ uint8_t chgsch=0; //µ÷Õû½ø¶ÈÌõ±êÖ¾Î»
 char music_name[FILE_NAME_LEN] __EXRAM;//¸èÇúÃûÊı×é
 //ÎÄ¼şÏµÍ³Ïà¹Ø±äÁ¿
 FRESULT f_result; 
-extern FIL   file __EXRAM;
+extern FIL  file ;
 UINT    f_num;
 //¸è´ÊÊı×é--´æ·Å¸è´ÊÊı¾İ
 uint8_t ReadBuffer1[1024/2*3] __EXRAM; //¸è´Ê»¬¶¯½ø¶ÈÌõ¸è´Ê¿¨ËÀ»ò²»Í¬²½¿ÉÔö´ó´ËÖµ
@@ -72,7 +72,7 @@ uint8_t ReadBuffer1[1024/2*3] __EXRAM; //¸è´Ê»¬¶¯½ø¶ÈÌõ¸è´Ê¿¨ËÀ»ò²»Í¬²½¿ÉÔö´ó´ËÖ
 //¸è´ÊÏÔÊ¾±êÖ¾Î»
 //static int show_lrc = 0;
 //¸è´Ê½á¹¹Ìå
-LYRIC lrc ;// __EXRAM;
+LYRIC lrc  __EXRAM;
 static HDC hdc_bk;
 static HWND wnd;//ÒôÁ¿»¬¶¯Ìõ´°¿Ú¾ä±ú 
 //static HWND wnd_horn;//ÒôÁ¿»¬¶¯Ìõ´°¿Ú¾ä±ú 

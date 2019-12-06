@@ -10,11 +10,12 @@ enum
   ID_TEXTBOX_Title      = 0x00,     // ±ÍÃ‚¿∏
   ID_TEXTBOX_Send        ,//0x01     // ∑¢ÀÕœ‘ æ
   ID_TEXTBOX_Receive     ,//0x02     // Ω” ’œ‘ æ
-  ID_TEXTBOX_RemoteIP1   ,//0x07     // ‘∂∂ÀIP
-  ID_TEXTBOX_RemoteIP2   ,//0x08     // ‘∂∂ÀIP
-  ID_TEXTBOX_RemoteIP3   ,//0x09     // ‘∂∂ÀIP
-  ID_TEXTBOX_RemoteIP4  ,//0x0A     // ‘∂∂ÀIP
+  ID_TEXTBOX_RemoteIP   ,//0x07     // ‘∂∂ÀIP
+//  ID_TEXTBOX_RemoteIP2   ,//0x08     // ‘∂∂ÀIP
+//  ID_TEXTBOX_RemoteIP3   ,//0x09     // ‘∂∂ÀIP
+//  ID_TEXTBOX_RemoteIP4  ,//0x0A     // ‘∂∂ÀIP
   ID_TEXTBOX_RemotePort  ,//0x0B     // ‘∂∂À∂Àø⁄
+	ID_MODE_GROUP,
   
   /* ∞¥≈• ID */
   eID_Network_EXIT    ,//0x03

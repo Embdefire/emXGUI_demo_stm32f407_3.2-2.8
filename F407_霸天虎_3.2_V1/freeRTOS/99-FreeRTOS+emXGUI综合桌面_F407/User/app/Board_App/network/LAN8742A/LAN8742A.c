@@ -103,9 +103,6 @@ static void ETH_MACDMA_Config(void)
   /*------------------------   MAC   -----------------------------------*/
 	/* 开启网络自适应功能 */
   ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Enable;
-//  ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Disable; 
-//  ETH_InitStructure.ETH_Speed = ETH_Speed_10M;
-//  ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex;   
   /* 关闭反馈 */
   ETH_InitStructure.ETH_LoopbackMode = ETH_LoopbackMode_Disable;
 	/* 关闭重传功能 */
@@ -129,9 +126,6 @@ static void ETH_MACDMA_Config(void)
 
   /*------------------------   DMA   -----------------------------------*/  
 
-  /* When we use the Checksum offload feature, we need to enable the Store and Forward mode:
-  the store and forward guarantee that a whole frame is stored in the FIFO, so the MAC can insert/verify the checksum, 
-  if the checksum is OK the DMA can handle the frame otherwise the frame is dropped */
 	/*当我们使用帧校验和卸载功能的时候，一定要使能存储转发模式,存储转发模式中要保证整个帧存储在FIFO中,
 	这样MAC能插入/识别出帧校验值,当真校验正确的时候DMA就可以处理帧,否则就丢弃掉该帧*/
 	

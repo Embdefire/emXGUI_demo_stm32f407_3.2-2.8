@@ -16,7 +16,7 @@
 
 
 	/* FatFs文件系统对象 */
-static FATFS fs ;//__EXRAM;										
+static FATFS fs __EXRAM;										
 
 void FileSystem_Test(void);
 

@@ -71,7 +71,6 @@ a lot of data that needs to be copied, this should be set high. */
 ////#define MEM_SIZE_ALIGNED     LWIP_MEM_ALIGN_SIZE(MEM_SIZE)
 
 ////#define LWIP_RAM_HEAP_POINTER ram_heap
-////extern u8_t ram_heap[MEM_SIZE_ALIGNED + (2*SIZEOF_STRUCT_MEM) + MEM_ALIGNMENT] __EXRAM;
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this

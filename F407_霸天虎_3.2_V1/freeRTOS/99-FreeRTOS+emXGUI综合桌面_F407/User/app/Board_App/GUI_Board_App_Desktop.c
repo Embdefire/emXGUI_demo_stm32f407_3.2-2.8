@@ -77,66 +77,6 @@ extern void GUI_LED_KEY_Dialog(void);
 extern BOOL player_state;
 int thread_ctrl = 1;
 
-/* 视频播放器的应用 */
-//void GUI_VideoPlayerTest(void)
-//{
-//  while(thread_ctrl)
-//  {
-//    GUI_VideoPlayer_DIALOG();
-//      
-//      if(player_state != FALSE)
-//        ;
-//      else
-//        thread_ctrl = 0;
-//  }
-//  thread_ctrl = 1;
-//  player_state = TRUE;
-//}
-//void GUI_Camera_DIALOGTest(void)
-//{
-//   static int thread = 0;
-//   int app = 0;
-//   static rt_thread_t h1;
-//	if(thread==0)
-//	{  
-//      h1=GUI_Thread_Create((void(*)(void*))GUI_Camera_DIALOGTest,"GUI_Camera_DIALOGTest",4*1024,NULL,0,1);
-//      rt_thread_startup(h1);				
-//      thread =1;
-//      return;
-//	}
-//	if(thread==1) //线程已创建了
-//	{
-//		if(app==0)
-//		{
-//			app=1;
-//			GUI_Camera_DIALOG();
-//			app=0;
-//			thread=0;
-//		}
-//	}   
-//}
-//void GUI_PicViewer_DIALOGTest(void)
-//{
-//   static int thread = 0;
-//   int app = 0;
-//	if(thread==0)
-//	{  
-//      GUI_Thread_Create((void(*)(void*))GUI_PicViewer_DIALOGTest,"GUI_PicViewer_DIALOGTest",4*1024,NULL,15,5);
-//		
-//      thread =1;
-//      return;
-//	}
-//	if(thread==1) //线程已创建了
-//	{
-//		if(app==0)
-//		{
-//			app=1;
-//			GUI_PicViewer_Dialog();
-//			app=0;
-//			thread=0;
-//		}
-//	}   
-//}
 
 static const struct __obj_list menu_list_1[] = {
   
@@ -146,7 +86,7 @@ static const struct __obj_list menu_list_1[] = {
       L"摄像头",		  NULL,	  L"M", RGB_WHITE, GUI_Camera_DIALOG,//dummy,//
 
       L"WiFi",		    NULL,	  L"P", RGB_WHITE, gui_wifi_dialog,
-//      L"以太网",		  NULL,	  L"Q", RGB_WHITE, GUI_NetworkDLG_Dialog,
+      L"以太网",		  NULL,	  L"Q", RGB_WHITE, GUI_NetworkDLG_Dialog,
       L"模拟U盘",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE, GUI_LED_KEY_Dialog,
 

@@ -31,7 +31,7 @@ uint8_t ucTcpClosedFlag;
 static uint8_t IsChange=1;
 static char ssid[21]={"embedfire2"};
 static char pwd[21]={"wildfire"};
-static char host_ip[16]={"192.168.0.225"};
+static char host_ip[16]={"192.168.0.205"};
 static char host_port[6]={"8080"};
 static uint8_t wifistat=0;
 
@@ -480,7 +480,7 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
       OffsetRect(&rc, rc.w+3, 0);
-      Temp_Handle = CreateWindow(TEXTBOX, L"225", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
+      Temp_Handle = CreateWindow(TEXTBOX, L"205", WS_VISIBLE|WS_OWNERDRAW, rc.x, rc.y, rc.w, rc.h, hwnd, ID_TEXTBOX_RemoteIP4, NULL, NULL);//
       SendMessage(Temp_Handle, TBM_SET_TEXTFLAG, 0, DT_VCENTER | DT_CENTER | DT_BKGND);
 
       rc.w = 55;
@@ -721,6 +721,7 @@ void gui_wifi_dialog(void)
 	MSG msg;
   HWND hwnd;
 	wcex.Tag = WNDCLASS_TAG;
+	
 
 	wcex.Style = CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc = win_proc; //设置主窗口消息处理的回调函数.

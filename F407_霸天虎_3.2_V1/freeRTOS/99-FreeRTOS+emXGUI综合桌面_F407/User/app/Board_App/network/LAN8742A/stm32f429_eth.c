@@ -34,32 +34,7 @@
 #include "gui_drv_cfg.h"
 
 
-/** @defgroup ETH_Private_TypesDefinitions
-* @{
-*/ 
-/**
-* @}
-*/ 
-
-
-/** @defgroup ETH_Private_Defines
-* @{
-*/ 
-
-/**
-* @}
-*/
-
-/** @defgroup ETH_Private_Macros
-* @{
-*/ 
-/**
-* @}
-*/
-
-/** @defgroup ETH_Private_Variables
-* @{
-*/ 
+ 
 __align(4) ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB]  __EXRAM;/* Ethernet Rx MA Descriptor */
 __align(4) ETH_DMADESCTypeDef  DMATxDscrTab[ETH_TXBUFNB]  __EXRAM;/* Ethernet Tx DMA Descriptor */
 __align(4) uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE]  __EXRAM; /* Ethernet Receive Buffer */

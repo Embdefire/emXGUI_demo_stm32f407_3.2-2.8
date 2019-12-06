@@ -17,6 +17,17 @@ LR_IROM1 0x08000000 0x00100000  {    ; load region size_region
 ;  *.o(HEAP)            ;选择堆区
   .ANY (EXRAM)       ;选择EXRAM节区
   }
+  CCM_IRAM 0x10000000 0x00010000  {  ; 内部CCM 只能内核访问  
+;  heap_4.o (+RW +ZI)      ;将外设不访问的数据分配到这里
+   startup_stm32f40xx.o       (+RW +ZI)
+   lodepng.o                  (+RW +ZI)   
+   cm_backtrace.o             (+RW +ZI)      
+   tasks.o                    (+RW +ZI)      
+   buffers.o                  (+RW +ZI) 
+   gui_simulateudisk_dialog.o (+RW +ZI)     
+   gui_wifi_dialog.o          (+RW +ZI) 
+   bsp_ov5640.o               (+RW +ZI)
+  }
   
 }
 

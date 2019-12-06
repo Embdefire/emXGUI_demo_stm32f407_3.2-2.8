@@ -270,8 +270,8 @@ typedef struct  {
 #define ETH_EXTRA                 2    /*!< Extra bytes in some cases */   
 #define VLAN_TAG                  4    /*!< optional 802.1q VLAN Tag */
 #define MIN_ETH_PAYLOAD          46    /*!< Minimum Ethernet payload size */
-#define MAX_ETH_PAYLOAD        1500    /*!< Maximum Ethernet payload size */
-#define JUMBO_FRAME_PAYLOAD    9000    /*!< Jumbo frame payload size */      
+#define MAX_ETH_PAYLOAD        1500/2    /*!< Maximum Ethernet payload size */
+#define JUMBO_FRAME_PAYLOAD    9000/2    /*!< Jumbo frame payload size */      
 
  /* Ethernet driver receive buffers are organized in a chained linked-list, when
     an ethernet packet is received, the Rx-DMA will transfer the packet from RxFIFO
