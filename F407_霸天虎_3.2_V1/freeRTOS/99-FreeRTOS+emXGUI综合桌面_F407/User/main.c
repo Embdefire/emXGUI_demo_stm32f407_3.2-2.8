@@ -90,7 +90,10 @@ static void BSP_Init(void)
   
 	/* LED 初始化 */
 	LED_GPIO_Config();
-  
+	
+	// 初始化蜂鸣器
+  BEEP_GPIO_Config();                
+	
   /* 按键初始化	*/
   Key_GPIO_Config();	
 
@@ -118,6 +121,8 @@ static void BSP_Init(void)
   rtc_time.RTC_Date.RTC_Month   =10;
   rtc_time.RTC_Date.RTC_Year    =15;
   RTC_CheckAndConfig(&rtc_time,0);
+
+	
 
 }
 

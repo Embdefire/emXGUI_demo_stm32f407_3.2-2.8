@@ -35,7 +35,7 @@ extern "C"{
 #include ".\clock\rtc\bsp_date.h"
 #include  ".\clock\rtc\bsp_rtc.h"
 #include "./wm8978/bsp_wm8978.h"  
-
+#include "./beep/bsp_beep.h"   
 
 #include "gui_drv_cfg.h"
 
