@@ -280,12 +280,13 @@ static void Brigh_Textbox_OwnerDraw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 
   if (WinTexeLen > 0)
   {
-    wbuf = (WCHAR *)GUI_VMEM_Alloc(WinTexeLen*2);         // 申请文本长度 + 新消息长度的内存
+    wbuf = (WCHAR *)GUI_VMEM_Alloc(WinTexeLen*2);         // 申请文本长度 + 新消息长度的内存 ////
     GetWindowText(hwnd, wbuf, WinTexeLen+1);    // 得到原文本
 
     SetFont(hdc, defaultFont);
     DrawText(hdc, wbuf, -1, &rc, DT_TOP|DT_LEFT|DT_WORDBREAK);     // 绘制文字( 顶部对齐，左对齐，当字符超出矩形边界时,自动换行)
   }
+	GUI_VMEM_Free(wbuf);
 }
 
 extern void TCP_Echo_Init(void);

@@ -36,10 +36,10 @@ static void _ExitButton_OwnerDraw(DRAWITEM_HDR *ds)
 	rc = ds->rc; 
   hwnd = ds->hwnd;
 
-  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
-  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
+//  GetClientRect(hwnd, &rc_tmp);//得到控件的位置
+//  WindowToScreen(hwnd, (POINT *)&rc_tmp, 1);//坐标转换
 
-  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
+//  BitBlt(hdc, rc.x, rc.y, rc.w, rc.h, hdc_bk, rc_tmp.x, rc_tmp.y, SRCCOPY);
 
   if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
@@ -144,6 +144,21 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         png_dec = PNG_Open(pic_buf, pic_size);
         PNG_GetBitmap(png_dec, &png_bm);
         DrawBitmap(hdc_btn, 0, 0, &png_bm, NULL);
+        PNG_Close(png_dec);
+      }
+      /* 释放图片内容空间 */
+      RES_Release_Content((char **)&pic_buf);
+      
+      /* 创建 HDC */
+      hdc_btn_press = CreateMemoryDC((SURF_FORMAT)COLOR_FORMAT_ARGB8888, 71, 30);
+      ClrDisplay(hdc_btn_press, NULL, 0);
+      res = RES_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
+//      res = FS_Load_Content(GUI_UDISK_BTN_PRESS_PIC, (char**)&pic_buf, &pic_size);
+      if(res)
+      {
+        png_dec = PNG_Open(pic_buf, pic_size);
+        PNG_GetBitmap(png_dec, &png_bm);
+        DrawBitmap(hdc_btn_press, 0, 0, &png_bm, NULL);
         PNG_Close(png_dec);
       }
       /* 释放图片内容空间 */
@@ -269,7 +284,9 @@ static LRESULT	win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
     { 
-//      DeleteDC(bk_hdc);
+	    DeleteDC(hdc_bk);
+      DeleteDC(hdc_btn);
+      DeleteDC(hdc_btn_press);
       DCD_DevDisconnect(&USB_OTG_dev);
       USB_OTG_STOP();
       return PostQuitMessage(hwnd);	
