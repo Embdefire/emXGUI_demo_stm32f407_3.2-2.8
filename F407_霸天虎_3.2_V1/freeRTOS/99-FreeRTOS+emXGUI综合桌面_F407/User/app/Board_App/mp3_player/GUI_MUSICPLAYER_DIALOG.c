@@ -284,7 +284,6 @@ static void App_MusicList()
    
 	if(thread==0)
 	{  
-//      h1=rt_thread_create("App_MusicList",(void(*)(void*))App_MusicList,NULL,4*1024,5,1);
      xTaskCreate((TaskFunction_t )(void(*)(void*))App_MusicList,    /* 任务入口函数 */
                             (const char*    )"App_MusicList",       /* 任务名字 */
                             (uint16_t       )2*1024/4,              /* 任务栈大小FreeRTOS的任务栈以字为单位 */
@@ -293,11 +292,11 @@ static void App_MusicList()
                             (TaskHandle_t  )&h1);                   /* 任务控制块指针 */
 	
       thread =1;
-//      return;
+      return;
 	}
 
     I2S_Play_Stop();
-    vTaskSuspend(h_music);    // 进入列表挂起音乐播放
+//    vTaskSuspend(h_music);    // 进入列表挂起音乐播放
 
 	while(thread) //线程已创建了
 	{
@@ -314,9 +313,10 @@ static void App_MusicList()
     GUI_msleep(10);
 	}
 
-   vTaskResume(h_music);    // 退出选择列表恢复音乐播放
+//   vTaskResume(h_music);    // 退出选择列表恢复音乐播放
    I2S_Play_Start();
-  GUI_Thread_Delete(GUI_GetCurThreadHandle()); 
+   GUI_Thread_Delete(GUI_GetCurThreadHandle()); 
+
 }
 /**
   * @brief  播放音乐列表进程

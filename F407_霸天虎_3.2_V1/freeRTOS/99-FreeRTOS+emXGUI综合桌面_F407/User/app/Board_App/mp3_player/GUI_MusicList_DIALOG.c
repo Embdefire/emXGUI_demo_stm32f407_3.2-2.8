@@ -261,10 +261,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 							{
                      play_index = nm->idx;//切换至下一首
                      mp3player.ucStatus = STA_SWITCH;	                  
-//                  Play_index = ;
-//                  sw_flag = 1;
-//                    PostCloseMessage(hwnd); //产生WM_CLOSE消息关闭主窗口
-//                    menu_list_1[nm->idx].cbStartup(hwnd);
+                     PostCloseMessage(hwnd); //产生WM_CLOSE消息关闭主窗口
                }
 
                break;

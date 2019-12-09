@@ -381,15 +381,6 @@ void mp3PlayerDemo(HWND hwnd, const char *mp3file, uint8_t vol, uint8_t vol_horn
                //如果进入音乐列表，则不显示
                if(enter_flag == 0)
                {
-                  //清除歌曲时间显示和歌词名字的显示
-                  //ClrDisplay(hdc, &rc_MusicTimes, color);
-                  //ClrDisplay(hdc, &rc_musicname, color);
-                  //将字符数组转换为宽字符类型
-                   //x_mbstowcs_cp936(wbuf, music_lcdlist[play_index], FILE_NAME_LEN);
-//                  DrawText(hdc, wbuf, -1, &rc_musicname, DT_SINGLELINE | DT_CENTER | DT_VCENTER);//绘制文字
-                  //将歌曲时间格式化输出到wbuf
-//                  x_wsprintf(wbuf, L"%02d:%02d",curtime/60,curtime%60);
-//                  DrawText(hdc, wbuf, -1, &rc_MusicTimes, DT_SINGLELINE | DT_CENTER | DT_VCENTER);//绘制文字
                   if(ooo == 0)//确保只会刷新一次
                   {
                      x_wsprintf(wbuf, L"%02d:%02d",alltime/60,alltime%60);
