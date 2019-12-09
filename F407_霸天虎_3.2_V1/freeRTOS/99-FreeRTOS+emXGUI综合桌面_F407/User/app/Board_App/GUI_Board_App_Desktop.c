@@ -70,7 +70,7 @@ extern void GUI_SMS_Dialog(void);
 extern void GUI_CLOCK_DIALOG(void);
 extern void GUI_RECORDER_DIALOG(void);
 extern void gui_wifi_dialog(void);
-extern void GUI_NetworkDLG_Dialog(void);
+extern void gui_network_dialog(void);
 extern void GUI_SimulateUDisk_Dialog(void);
 extern void GUI_LED_KEY_Dialog(void);
 
@@ -86,7 +86,7 @@ static const struct __obj_list menu_list_1[] = {
       L"ÉãÏñÍ·",		  NULL,	  L"M", RGB_WHITE, GUI_Camera_DIALOG,//dummy,//
 
       L"WiFi",		    NULL,	  L"P", RGB_WHITE, gui_wifi_dialog,
-      L"ÒÔÌ«Íø",		  NULL,	  L"Q", RGB_WHITE, GUI_NetworkDLG_Dialog,
+      L"ÒÔÌ«Íø",		  NULL,	  L"Q", RGB_WHITE, gui_network_dialog,
       L"Ä£ÄâUÅÌ",     NULL,	  L"N", RGB_WHITE, GUI_SimulateUDisk_Dialog,
       L"LED&KEY",    NULL,	  L"j", RGB_WHITE, GUI_LED_KEY_Dialog,
 

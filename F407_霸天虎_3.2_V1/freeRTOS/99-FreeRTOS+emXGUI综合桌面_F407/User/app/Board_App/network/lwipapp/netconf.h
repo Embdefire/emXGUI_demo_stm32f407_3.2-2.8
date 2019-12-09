@@ -66,7 +66,7 @@ extern DRV_NETWORK drv_network;
 
 /* Uncomment SERIAL_DEBUG to enables retarget of printf to  serial port (COM1 on STM32 evalboard)
    for debug purpose */   
-#define SERIAL_DEBUG 
+#define SERIAL_DEBUG            
 
 #define DEST_IP_ADDR0               192
 #define DEST_IP_ADDR1               168
@@ -90,7 +90,7 @@ extern DRV_NETWORK drv_network;
 #define LOCAL_IP_ADDR0              192
 #define LOCAL_IP_ADDR1              168
 #define LOCAL_IP_ADDR2                0
-#define LOCAL_IP_ADDR3              122
+#define LOCAL_IP_ADDR3              240
 
 /*NETMASK*/
 #define NETMASK_ADDR0               255

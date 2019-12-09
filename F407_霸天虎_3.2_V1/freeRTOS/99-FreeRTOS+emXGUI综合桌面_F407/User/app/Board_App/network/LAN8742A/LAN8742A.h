@@ -106,8 +106,8 @@
 #define ETH_RMII_RXD1_SOURCE            GPIO_PinSource5
 
 /* ETH_RMII_TX_EN */
-#define ETH_RMII_TX_EN_GPIO_CLK         RCC_AHB1Periph_GPIOB
-#define ETH_RMII_TX_EN_PORT             GPIOB
+#define ETH_RMII_TX_EN_GPIO_CLK         RCC_AHB1Periph_GPIOG
+#define ETH_RMII_TX_EN_PORT             GPIOG
 #define ETH_RMII_TX_EN_PIN              GPIO_Pin_11
 #define ETH_RMII_TX_EN_AF               GPIO_AF_ETH
 #define ETH_RMII_TX_EN_SOURCE           GPIO_PinSource11

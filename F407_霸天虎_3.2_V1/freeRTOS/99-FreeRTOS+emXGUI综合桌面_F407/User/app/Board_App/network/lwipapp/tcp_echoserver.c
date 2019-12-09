@@ -178,16 +178,16 @@ static err_t tcp_echoserver_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 
   /* 设置当前连接的 IP */
   x_wsprintf(wbuf, L"%d", newpcb->remote_ip.addr & 0xFF);//ip4_addr1(newpcb->remote_ip.addr)
-  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP), wbuf);
+  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP1), wbuf);
   
-//  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 8) & 0xFF);//ip4_addr2(newpcb->remote_ip.addr)
-//  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP2), wbuf);
-//  
-//  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 16) & 0xFF);//ip4_addr3(newpcb->remote_ip.addr)
-//  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP3), wbuf);
-//  
-//  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 24) & 0xFF);//ip4_addr4(newpcb->remote_ip.addr)
-//  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP4), wbuf);
+  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 8) & 0xFF);//ip4_addr2(newpcb->remote_ip.addr)
+  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP2), wbuf);
+  
+  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 16) & 0xFF);//ip4_addr3(newpcb->remote_ip.addr)
+  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP3), wbuf);
+  
+  x_wsprintf(wbuf, L"%d", (newpcb->remote_ip.addr >> 24) & 0xFF);//ip4_addr4(newpcb->remote_ip.addr)
+  SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemoteIP4), wbuf);
   
   x_wsprintf(wbuf, L"%d", newpcb->remote_port);
   SetWindowText(GetDlgItem(Network_Main_Handle, ID_TEXTBOX_RemotePort), wbuf);
