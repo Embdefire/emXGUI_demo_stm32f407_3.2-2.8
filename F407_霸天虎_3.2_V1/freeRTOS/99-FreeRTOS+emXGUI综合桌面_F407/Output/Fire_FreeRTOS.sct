@@ -9,11 +9,11 @@ LR_IROM1 0x08000000 0x00100000  {    ; load region size_region
    .ANY (+RO)
    .ANY (+XO)
   }
-  RW_IRAM1 0x20000000 0x00020000  {  ; 内部SRAM 
+  RW_IRAM1 0x20000000 0x00030000  {  ; 内部SRAM 
   .ANY (+RW +ZI)      ;其余的RW/ZI-data都分配到这里
   }
    
-  RW_ERAM1 0x6C0FA000 0x0000006000 {  ; 外部SDRAM
+  RW_ERAM1 0x6C0FA000 0x00006000 {  ; 外部SDRAM
 ;  *.o(HEAP)            ;选择堆区
   .ANY (EXRAM)       ;选择EXRAM节区
   }
@@ -27,6 +27,12 @@ LR_IROM1 0x08000000 0x00100000  {    ; load region size_region
    gui_simulateudisk_dialog.o (+RW +ZI)     
    gui_wifi_dialog.o          (+RW +ZI) 
    bsp_ov5640.o               (+RW +ZI)
+   usbd_core.o                (+RW +ZI)
+   gui_font_port.o            (+RW +ZI)
+   calculator.o               (+RW +ZI)
+   stm32f429_eth.o            (+RW +ZI)
+   tcp_echoclient.o            (+RW +ZI)   
+   udp_echoclient.o            (+RW +ZI)   
   }
   
 }

@@ -60,13 +60,13 @@ int IsCreateList = 0;
 int time2exit = 0;
 static COLORREF color_bg;//透明控件的背景颜色
 uint8_t chgsch=0; //调整进度条标志位
-char music_name[FILE_NAME_LEN] __EXRAM;//歌曲名数组
+char music_name[FILE_NAME_LEN] __EXRAM ;//歌曲名数组
 //文件系统相关变量
 FRESULT f_result; 
 extern FIL  file ;
 UINT    f_num;
 //歌词数组--存放歌词数据
-uint8_t ReadBuffer1[1024/2*3] __EXRAM; //歌词滑动进度条歌词卡死或不同步可增大此值
+uint8_t ReadBuffer1[1024/2*3] __EXRAM ; //歌词滑动进度条歌词卡死或不同步可增大此值
 //MINI播放键、上一首、下一首控件句柄句柄
 //static HWND mini_start;
 //歌词显示标志位
@@ -1070,24 +1070,7 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
          
          //开始绘制
          hdc = BeginPaint(hwnd, &ps); 
-////         if(tt == 0)
-//         {
-////            tt = 1;
-////            BitBlt(hdc_mem11, 0, 0, 50, 50, hdc_bk, 135, 95, SRCCOPY);
-////           if (show_lrc == 0)
-//            RotateBitmap(hdc_mem11,25,25,&bm_0,0);
-//         }            
-//         
-//        rc.x=135;
-//        rc.y=60;
-//        rc.w=50;
-//        rc.h=50;
-//         
-//         SetTextColor(hdc, MapARGB(rotate_disk_hdc, 255, 50, 205, 50));
-//         SetFont(hdc, iconFont_50);
-//         DrawTextEx(hdc,L"a",-1,&rc,DT_SINGLELINE|DT_VCENTER|DT_CENTER,NULL);
 
-//        BitBlt(hdc,rc.x,rc.y,rc.w,rc.h,rotate_disk_hdc,0,0,SRCCOPY);
              
          //获取屏幕点（385，404）的颜色，作为透明控件的背景颜色
         color_bg = GetPixel(hdc, 300, 200);
@@ -1124,7 +1107,6 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 				cr =(CTLCOLOR*)lParam;
 				cr->TextColor =RGB888(255,255,255);//文字颜色（RGB888颜色格式)
 				cr->BackColor =RGB888(0,0,0);//背景颜色（RGB888颜色格式)
-				//cr->BorderColor =RGB888(255,10,10);//边框颜色（RGB888颜色格式)
 				return TRUE;
 			}
 			else if(id == ID_TEXTBOX_LRC1||id == ID_TEXTBOX_LRC2||id == ID_TEXTBOX_LRC5||id == ID_TEXTBOX_LRC4)
@@ -1133,7 +1115,6 @@ static LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam){
 				cr =(CTLCOLOR*)lParam;
 				cr->TextColor =RGB888(250,0,0);//文字颜色（RGB888颜色格式)
 				cr->BackColor =RGB888(0,0,0);//背景颜色（RGB888颜色格式)
-				//cr->BorderColor =RGB888(255,10,10);//边框颜色（RGB888颜色格式)
 				return TRUE;				
 			}
          if(id== ID_TB1 || id== ID_TB2 || id== ID_TB5 )

@@ -42,7 +42,7 @@ TaskHandle_t h_play_record;
 extern char music_playlist[MUSIC_MAX_NUM][FILE_NAME_LEN] __EXRAM;  // 播放List
 extern char music_lcdlist[MUSIC_MAX_NUM][MUSIC_NAME_LEN] __EXRAM;  // 显示list
 extern uint8_t  music_file_num;                   // 文件个数
-extern char music_name[FILE_NAME_LEN] __EXRAM;    // 歌曲名数组
+extern char music_name[FILE_NAME_LEN] ;    // 歌曲名数组
 extern int play_index;      // 播放歌曲的编号值
 extern HWND music_wnd_time; // 歌曲进度条窗口句柄
 extern uint8_t chgsch;      // 调整进度条标志位
@@ -127,7 +127,7 @@ static FRESULT scan_record_files(char* path)
 extern uint8_t Isread;              /* DMA传输完成标志 */
 extern uint8_t bufflag;             /* 数据缓存区选择标志 */
 extern uint32_t wavsize;            /* wav音频数据大小 */
-extern FIL file __EXRAM;			/* file objects */
+extern FIL file ;			/* file objects */
 extern char recfilename[25]; 
 extern WavHead rec_wav;             /* WAV设备  */
 extern FRESULT result; 

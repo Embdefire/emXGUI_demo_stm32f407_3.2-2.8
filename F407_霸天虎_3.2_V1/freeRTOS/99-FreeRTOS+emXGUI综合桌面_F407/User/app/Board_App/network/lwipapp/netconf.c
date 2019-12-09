@@ -52,7 +52,6 @@ uint32_t LinkTimer = 0;
 uint32_t IPaddress = 0;
 
 
-//u8_t ram_heap[MEM_SIZE_ALIGNED + (2*SIZEOF_STRUCT_MEM) + MEM_ALIGNMENT] __EXRAM;
 #ifdef USE_DHCP
 #include "./Bsp/led/bsp_led.h" 
 uint32_t DHCPfineTimer = 0;

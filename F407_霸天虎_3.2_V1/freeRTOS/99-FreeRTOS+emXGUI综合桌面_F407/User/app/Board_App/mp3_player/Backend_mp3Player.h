@@ -5,7 +5,7 @@
 #include "emXGUI.h"
 
 
-#define RECBUFFER_SIZE  128
+#define RECBUFFER_SIZE  1024*4
 #define FMT_COUNT	6		/* 音频格式数组元素个数 */
 /* 状态 */
 enum

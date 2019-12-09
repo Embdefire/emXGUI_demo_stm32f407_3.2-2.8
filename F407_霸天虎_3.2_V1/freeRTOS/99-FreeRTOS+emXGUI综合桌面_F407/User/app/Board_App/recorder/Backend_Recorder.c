@@ -34,7 +34,7 @@ uint32_t wavsize=0;         /* wav音频数据大小 */
 extern uint16_t music_buffer0[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区1 ，实际占用字节数：RECBUFFER_SIZE*2 */
 extern uint16_t music_buffer1[RECBUFFER_SIZE] __EXRAM;  /* 数据缓存区2 ，实际占用字节数：RECBUFFER_SIZE*2 */
 
-extern FIL file __EXRAM;				/* file objects */
+extern FIL file ;				/* file objects */
 extern FRESULT result; 
 extern UINT bw;            					/* File R/W count */
 

@@ -16,7 +16,7 @@ static void   ESP8266_USART_NVIC_Configuration(void);
 
 extern uint8_t ucTcpClosedFlag;
 
-struct  STRUCT_USARTx_Fram strEsp8266_Fram_Record  __EXRAM;
+struct  STRUCT_USARTx_Fram strEsp8266_Fram_Record __EXRAM;
 
 static char *esp8266_itoa( int value, char * string, int radix );
 

@@ -54,26 +54,14 @@ static void button_owner_draw(DRAWITEM_HDR *ds) //绘制一个按钮外观
 	}
 	else if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-//    GUI_DEBUG("ds->ID=%d,BST_PUSHED",ds->ID);
-//		SetBrushColor(hdc,MapRGB(hdc,150,200,250)); //设置填充色(BrushColor用于所有Fill类型的绘图函数)
-//		SetPenColor(hdc,MapRGB(hdc,250,0,0));        //设置绘制色(PenColor用于所有Draw类型的绘图函数)
 		SetTextColor(hdc, MapRGB(hdc, 105, 105, 105));      //设置文字色
 	}
 	else
 	{ //按钮是弹起状态
-//		SetBrushColor(hdc,MapRGB(hdc,255,255,255));
-//		SetPenColor(hdc,MapRGB(hdc,0,250,0));
 		SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
 	}
 
 
-	//	SetBrushColor(hdc,COLOR_BACK_GROUND);
-
-	//	FillRect(hdc,&rc); //用矩形填充背景
-	//	DrawRect(hdc,&rc); //画矩形外框
-	//  
-	//  FillCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //用矩形填充背景FillCircle
-	//	DrawCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //画矩形外框
 
 	  /* 使用控制图标字体 */
 	SetFont(hdc, controlFont_32);
@@ -117,26 +105,12 @@ static void exit_owner_draw(DRAWITEM_HDR *ds)
 	}
 	else if (ds->State & BST_PUSHED)
 	{ //按钮是按下状态
-//    GUI_DEBUG("ds->ID=%d,BST_PUSHED",ds->ID);
-//		SetBrushColor(hdc,MapRGB(hdc,150,200,250)); //设置填充色(BrushColor用于所有Fill类型的绘图函数)
-//		SetPenColor(hdc,MapRGB(hdc,250,0,0));        //设置绘制色(PenColor用于所有Draw类型的绘图函数)
 		SetTextColor(hdc, MapRGB(hdc, 105, 105, 105));      //设置文字色
 	}
 	else
 	{ //按钮是弹起状态
-//		SetBrushColor(hdc,MapRGB(hdc,255,255,255));
-//		SetPenColor(hdc,MapRGB(hdc,0,250,0));
 		SetTextColor(hdc, MapRGB(hdc, 255, 255, 255));
 	}
-
-
-	//	SetBrushColor(hdc,COLOR_BACK_GROUND);
-
-	//	FillRect(hdc,&rc); //用矩形填充背景
-	//	DrawRect(hdc,&rc); //画矩形外框
-	//  
-	//  FillCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //用矩形填充背景FillCircle
-	//	DrawCircle(hdc,rc.x+rc.w/2,rc.x+rc.w/2,rc.w/2); //画矩形外框
 
 	  /* 使用控制图标字体 */
 	SetFont(hdc, controlFont_16);
@@ -289,8 +263,8 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                      mp3player.ucStatus = STA_SWITCH;	                  
 //                  Play_index = ;
 //                  sw_flag = 1;
-                  //PostCloseMessage(hwnd); //产生WM_CLOSE消息关闭主窗口
-                  //menu_list_1[nm->idx].cbStartup(hwnd);
+//                    PostCloseMessage(hwnd); //产生WM_CLOSE消息关闭主窗口
+//                    menu_list_1[nm->idx].cbStartup(hwnd);
                }
 
                break;
@@ -312,6 +286,7 @@ static LRESULT Win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
          {
            
             PostCloseMessage(hwnd);
+					   break;
          }   
          break;
       }      

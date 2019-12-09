@@ -183,28 +183,20 @@ static LRESULT	Collect_DTH11_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
     case WM_PAINT:
     {
       HDC hdc;
-//      HDC hdc_pointer;
       PAINTSTRUCT ps;
       WCHAR wbuf[128];
       RECT rc;
-//      hdc_pointer = CreateMemoryDC(SURF_SCREEN, PANEL_W, PANEL_H);
+
       hdc = BeginPaint(hwnd, &ps);
       
       BitBlt(hdc, 0, 0, GUI_XSIZE, GUI_YSIZE, bk_hdc, 0, 0, SRCCOPY);
 
-//      BitBlt(hdc_pointer, 0, 0, PANEL_W, PANEL_H, bk_hdc, 369, 64, SRCCOPY);
-      
-//      EnableAntiAlias(hdc, TRUE);
-//      X_MeterPointer(hdc_pointer, PANEL_W/2, PANEL_H/2, 191, MapRGB(hdc_pointer,250,20,20), 30, 298, 100, DHT11_Data.temp_int+DHT11_Data.temp_deci*0.1, Pointerstyle);
-//      X_MeterPointer(hdc_pointer, PANEL_W/2, PANEL_H/2, 138, MapRGB(hdc_pointer,20,250,20), -58, 298, 100, DHT11_Data.humi_int, Pointerstyle);
-//      EnableAntiAlias(hdc, FALSE);
       
       /* 温度数值显示 */
       rc.w = 64;
       rc.h = 34;
       rc.x = 206;
       rc.y = 73;
-      //x_wsprintf(wbuf, L"%d.%d",99,9);
       x_wsprintf(wbuf, L"%d.%d", DHT11_Data.temp_int,DHT11_Data.temp_deci);
       SetTextColor(hdc, MapRGB(hdc, 250, 250, 250));
 			SetFont(hdc, controlFont_32);
@@ -213,14 +205,11 @@ static LRESULT	Collect_DTH11_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
       /* 显示湿度数值 *///defaultFont
       rc.y = 133;
-			//x_wsprintf(wbuf, L"%d",9);
       x_wsprintf(wbuf, L"%d", DHT11_Data.humi_int);//.%d//,DHT11_Data.humi_deci
       DrawText(hdc, wbuf, -1, &rc, DT_VCENTER|DT_RIGHT);//绘制文字(居中对齐方式)
 
-//      BitBlt(hdc, 369, 64, PANEL_W, PANEL_H, hdc_pointer, 0, 0, SRCCOPY);
       
       EndPaint(hwnd, &ps);
-//      DeleteDC(hdc_pointer);
       break;
     }
     case WM_DRAWITEM:
