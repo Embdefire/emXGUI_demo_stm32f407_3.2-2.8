@@ -109,8 +109,28 @@ void FSMC_InitSRAM(void)
 	  FSMC_NORSRAMTimingInitTypeDef rd_timing;
 	  FSMC_NORSRAMTimingInitTypeDef wt_timing;
 
-
+  #define XM8A51216V33A15    0    // 1:外扩RAM芯片为XM8A51216  0:外扩RAM芯片为IS62WV51216BLL (当外扩RAM芯片为XM8A51216时，建议选择1，这样可以更快)
+  
+  #if XM8A51216V33A15
 	  //FSMC读时序控制寄存器
+	  rd_timing.FSMC_AddressSetupTime = 2; //地址建立时间
+	  rd_timing.FSMC_AddressHoldTime = 0;  //地址保持时间模式A未用到
+	  rd_timing.FSMC_DataSetupTime = 3;    //数据保存时间
+	  rd_timing.FSMC_BusTurnAroundDuration = 0x00;
+	  rd_timing.FSMC_CLKDivision = 0;
+	  rd_timing.FSMC_DataLatency = 0;
+	  rd_timing.FSMC_AccessMode = FSMC_AccessMode_A; //模式A
+
+	  //FSMC写时序控制寄存器
+	  wt_timing.FSMC_AddressSetupTime = 2;  //地址建立时间
+	  wt_timing.FSMC_AddressHoldTime = 0;   //地址保持时间在模式A未用到
+	  wt_timing.FSMC_DataSetupTime = 1;	  //数据保存时间
+	  wt_timing.FSMC_BusTurnAroundDuration = 0x00;
+	  wt_timing.FSMC_CLKDivision = 0;
+	  wt_timing.FSMC_DataLatency = 0;
+	  wt_timing.FSMC_AccessMode = FSMC_AccessMode_A; //模式A
+  #else
+    //FSMC读时序控制寄存器
 	  rd_timing.FSMC_AddressSetupTime = 2; //地址建立时间
 	  rd_timing.FSMC_AddressHoldTime = 0;  //地址保持时间模式A未用到
 	  rd_timing.FSMC_DataSetupTime = 6;    //数据保存时间
@@ -122,12 +142,12 @@ void FSMC_InitSRAM(void)
 	  //FSMC写时序控制寄存器
 	  wt_timing.FSMC_AddressSetupTime = 2;  //地址建立时间
 	  wt_timing.FSMC_AddressHoldTime = 0;   //地址保持时间在模式A未用到
-	  wt_timing.FSMC_DataSetupTime = 3;	  //数据保存时间
+	  wt_timing.FSMC_DataSetupTime = 6;	  //数据保存时间
 	  wt_timing.FSMC_BusTurnAroundDuration = 0x00;
 	  wt_timing.FSMC_CLKDivision = 0;
 	  wt_timing.FSMC_DataLatency = 0;
 	  wt_timing.FSMC_AccessMode = FSMC_AccessMode_A; //模式A
-
+  #endif
 	  FSMC_NORSRAMInitStructure.FSMC_Bank = EXT_SRAM_FSMC_BANK;
 	  FSMC_NORSRAMInitStructure.FSMC_DataAddressMux = FSMC_DataAddressMux_Disable;
 	  FSMC_NORSRAMInitStructure.FSMC_MemoryType = FSMC_MemoryType_SRAM;
@@ -139,7 +159,7 @@ void FSMC_InitSRAM(void)
 	  FSMC_NORSRAMInitStructure.FSMC_WaitSignalActive = FSMC_WaitSignalActive_BeforeWaitState;
 	  FSMC_NORSRAMInitStructure.FSMC_WriteOperation = FSMC_WriteOperation_Enable;
 	  FSMC_NORSRAMInitStructure.FSMC_WaitSignal = FSMC_WaitSignal_Disable;
-	  FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Disable;
+	  FSMC_NORSRAMInitStructure.FSMC_ExtendedMode = FSMC_ExtendedMode_Enable;
 	  FSMC_NORSRAMInitStructure.FSMC_WriteBurst = FSMC_WriteBurst_Disable;
 	  FSMC_NORSRAMInitStructure.FSMC_ReadWriteTimingStruct = &rd_timing;
 	  FSMC_NORSRAMInitStructure.FSMC_WriteTimingStruct = &wt_timing;
